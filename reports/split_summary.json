@@ -1,0 +1,79 @@
+{
+  "dataset_name": "SpamGuard AI Labeled Corpus Splits",
+  "input_dataset_path": "/Users/azriel/Documents/projects/AI_mp/data/processed/emails.csv",
+  "input_dataset_sha256": "338bb8ec9612e02f9c839b5b6d14d82ce2accd407f72f5e4f3a7e02fcf6063da",
+  "input_record_count": 5923,
+  "random_seed": 42,
+  "split_methodology": "Stratified random split (70% train, 15% validation, 15% test)",
+  "split_ratios": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "split_record_counts": {
+    "train": 4145,
+    "validation": 889,
+    "test": 889,
+    "total": 5923
+  },
+  "class_distributions": {
+    "original": {
+      "total": 5923,
+      "ham_count": 4109,
+      "spam_count": 1814,
+      "ham_percentage": 69.37,
+      "spam_percentage": 30.63
+    },
+    "train": {
+      "total": 4145,
+      "ham_count": 2876,
+      "spam_count": 1269,
+      "ham_percentage": 69.38,
+      "spam_percentage": 30.62
+    },
+    "validation": {
+      "total": 889,
+      "ham_count": 616,
+      "spam_count": 273,
+      "ham_percentage": 69.29,
+      "spam_percentage": 30.71
+    },
+    "test": {
+      "total": 889,
+      "ham_count": 617,
+      "spam_count": 272,
+      "ham_percentage": 69.4,
+      "spam_percentage": 30.6
+    }
+  },
+  "leakage_and_disjointness_checks": {
+    "shared_message_ids_train_val": 0,
+    "shared_message_ids_train_test": 0,
+    "shared_message_ids_val_test": 0,
+    "shared_content_train_val": 0,
+    "shared_content_train_test": 0,
+    "shared_content_val_test": 0,
+    "complete_coverage": true
+  },
+  "missing_value_checks": {
+    "train_missing_text": 0,
+    "val_missing_text": 0,
+    "test_missing_text": 0
+  },
+  "tfidf_configuration": {
+    "analyzer": "word",
+    "ngram_range": [
+      1,
+      2
+    ],
+    "max_features": 20000,
+    "min_df": 2,
+    "max_df": 0.98,
+    "sublinear_tf": true,
+    "lowercase": true,
+    "norm": "l2",
+    "strip_accents": "unicode",
+    "fitted_in_phase_04": false
+  },
+  "residual_leakage_note": "Exact duplicate texts and identical message IDs have been verified to have zero overlap across partitions. However, residual leakage risk remains inherent to historical mailing-list corpora where multi-turn reply chains share identical quoted header snippets. Strict isolation of vectorizer fitting to the training partition ensures no statistical leakage of IDF weights."
+}

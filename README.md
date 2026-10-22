@@ -117,9 +117,52 @@ python -m src.analyze_data
 - `reports/eda_summary.json`: Complete machine-readable summary statistics and distributions.
 - `reports/eda_findings.md`: In-depth academic discussion covering data quality, observed class differences, class imbalance implications, and metric justification.
 
-### Limitations & Responsible Use
-- **Historical Nature:** The Apache SpamAssassin public corpus is a historical cybersecurity dataset (circa 2002–2006). While highly effective for foundational NLP research, it should not be considered fully representative of modern zero-day phishing, spear-phishing, or AI-generated social engineering campaigns.
-- **Responsible Use & Privacy:** Corpus messages are used solely for offline educational and research analysis. Corpus content must never be sent or relayed to live mail servers or external email addresses.
+---
+
+## 🔒 Text Preprocessing & Leakage-Safe Data Splitting (Phase 04)
+
+Implemented in `src/preprocess.py`, Phase 04 standardizes email text and partitions the dataset into isolated, stratified subsets while strictly enforcing data leakage prevention protocols.
+
+### Execution Command
+```bash
+python -m src.preprocess --split
+```
+
+### Partitioning Methodology & Purpose
+The dataset is partitioned into three disjoint subsets:
+- **Training Set (70% — 4,145 emails):** Teaches the model feature associations and class prior probabilities.
+- **Validation Set (15% — 889 emails):** Used to tune hyperparameters, adjust decision thresholds, and validate convergence.
+- **Test Set (15% — 889 emails):** Held out strictly for final, uncorrupted performance reporting.
+
+### Why Stratification Matters
+Given the natural **69.37% Ham / 30.63% Spam** class distribution, standard unstratified random sampling risks introducing varying class frequencies across subsets. Stratified sampling preserves the identical proportion in every partition:
+- **Training:** 2,876 Ham (69.38%) | 1,269 Spam (30.62%)
+- **Validation:** 616 Ham (69.29%) | 273 Spam (30.71%)
+- **Test:** 617 Ham (69.40%) | 272 Spam (30.60%)
+
+### Content-Group-Aware Splitting & Leakage Prevention
+To guarantee zero data contamination:
+1. **Zero Shared Message IDs:** $\text{Train} \cap \text{Val} = \emptyset$, $\text{Train} \cap \text{Test} = \emptyset$, $\text{Val} \cap \text{Test} = \emptyset$.
+2. **Zero Identical Content Overlap:** Emails with identical normalized text (e.g., duplicated broadcast campaigns or matching newsletters) are grouped by content hash and assigned to the same partition, preventing identical text from appearing across train and test sets.
+3. **100% Coverage:** Every single one of the 5,923 original emails is allocated to exactly one partition.
+4. **TF-IDF Vocabulary Isolation:** The vectorizer factory (`build_tfidf_vectorizer()`) returns an **unfitted** instance. Fitting occurs strictly on the training partition in Phase 05, ensuring terms unique to validation/test sets cannot artificially influence vocabulary extraction or inverse document frequencies (IDF).
+
+### Residual Leakage Consideration
+While exact content and ID duplicates are strictly isolated, real-world mailing-list archives feature multi-turn conversation threads that quote preceding messages. Practitioners must recognize that residual lexical correlation can persist across related threads.
+
+### Unfitted TF-IDF Configuration
+- **Analyzer:** `word`
+- **N-gram Range:** `(1, 2)` (unigrams and bigrams to capture phrases such as `free money` and `click here`)
+- **Max Features:** `20,000` (bounds vocabulary to mitigate dimensionality curse)
+- **Document Frequency Bounds:** `min_df=2` (prunes hapax legomena), `max_df=0.98` (prunes ubiquitous terms)
+- **Sublinear Term Frequency:** `sublinear_tf=True` (scales term frequency logarithmically: $1 + \log(\text{tf})$)
+- **Normalization:** `norm="l2"`
+
+### Generated Split Artifacts
+- `data/processed/splits/train.csv` (4,145 rows)
+- `data/processed/splits/validation.csv` (889 rows)
+- `data/processed/splits/test.csv` (889 rows)
+- `reports/split_summary.json` (audit report capturing hashes, counts, and disjointness verification)
 
 ---
 
@@ -130,21 +173,24 @@ SpamGuard-AI/
 ├── app.py                  # Streamlit web application starter
 ├── requirements.txt        # Pinned project dependencies
 ├── README.md               # Project documentation and specifications
-├── .gitignore              # Git ignore rules for venv, cache, and raw/processed data
+├── .gitignore              # Git ignore rules for venv, cache, raw/processed data, and splits
 ├── pytest.ini              # Pytest configuration (pythonpath = .)
 ├── src/
 │   ├── __init__.py         # Core package definition
 │   ├── config.py           # Path constants and pipeline configurations
 │   ├── prepare_data.py     # Phase 02: Safe email download, parsing, and export
-│   └── analyze_data.py     # Phase 03: Exploratory data analysis & visualization engine
+│   ├── analyze_data.py     # Phase 03: Exploratory data analysis & visualization engine
+│   └── preprocess.py       # Phase 04: Text cleaning, stratified splitting & TF-IDF factory
 ├── data/
 │   ├── raw/                # Downloaded Apache SpamAssassin tar.bz2 archives (gitignored)
 │   └── processed/          # Cleaned emails.csv dataset (gitignored)
+│       └── splits/         # Phase 04: train.csv, validation.csv, test.csv (gitignored)
 ├── models/                 # Serialized model & vectorizer artifacts (.gitkeep)
 ├── reports/
 │   ├── data_summary.json   # Phase 02: Dataset ingestion statistics & SHA-256 hashes
 │   ├── eda_summary.json    # Phase 03: Quantitative EDA summary metrics
 │   ├── eda_findings.md     # Phase 03: Comprehensive academic findings report
+│   ├── split_summary.json  # Phase 04: Partition statistics & leakage audit report
 │   └── figures/            # Phase 03: Generated visualization charts
 │       ├── class_distribution.png
 │       ├── email_length_distribution.png
@@ -155,7 +201,8 @@ SpamGuard-AI/
 ├── tests/
 │   ├── test_smoke.py       # Phase 01: Project foundation smoke tests
 │   ├── test_prepare_data.py# Phase 02: Unit and integration tests for data parsing
-│   └── test_eda.py         # Phase 03: Unit and integration tests for EDA module
+│   ├── test_eda.py         # Phase 03: Unit and integration tests for EDA module
+│   └── test_preprocess.py  # Phase 04: Unit and integration tests for preprocessing & splits
 └── docs/                   # Additional architecture & academic documentation
 ```
 
@@ -190,13 +237,22 @@ SpamGuard-AI/
 - [x] Exported comprehensive metrics to `reports/eda_summary.json`.
 - [x] Authored thorough academic findings report (`reports/eda_findings.md`).
 - [x] Pytest unit and integration test suite with 9 dedicated tests (`tests/test_eda.py`).
-- [x] Full test suite (24 tests) passing cleanly.
+
+### ✅ Implemented in Phase 04 (Preprocessing & Splitting)
+- [x] Safe, consistent text normalization (Unicode NFKC, line breaks, null bytes) (`src/preprocess.py`).
+- [x] Group-aware stratified train (70%), validation (15%), and test (15%) splitting.
+- [x] Enforced strict data leakage prevention (0 shared IDs, 0 shared content, 100% coverage).
+- [x] Reusable, unfitted TF-IDF vectorizer factory (`build_tfidf_vectorizer`).
+- [x] Exported partitioned CSV splits under `data/processed/splits/` (gitignored).
+- [x] Generated deterministic audit report (`reports/split_summary.json`).
+- [x] Automated unit and integration test suite with 14 tests (`tests/test_preprocess.py`).
+- [x] Full test suite (38 tests) passing cleanly.
 
 ### ⏳ Planned Future Phases
-- [ ] **Phase 04 (Feature Engineering & Model Training):** Stratified train/test split; TF-IDF fit strictly on training set; Multinomial Naïve Bayes training; compute genuine Accuracy, Precision, Recall, and F1-Score.
-- [ ] **Phase 05 (Inference Engine & Testing):** Standalone inference class with probability scoring and keyword explanations, isolated from UI.
-- [ ] **Phase 06 (Streamlit Live Application):** Live interactive email testing, confidence meters, and evaluation analytics.
-- [ ] **Phase 07 (Project Review & Finalization):** Final academic report documentation, end-to-end verification, and release tagging.
+- [ ] **Phase 05 (Model Training & Evaluation):** Fit TF-IDF and Multinomial Naïve Bayes pipeline on training data only; hyperparameter tuning on validation; final evaluation on test set (Accuracy, Precision, Recall, F1, Confusion Matrix); serialize artifacts (`.joblib`).
+- [ ] **Phase 06 (Inference Engine & Testing):** Standalone inference module with confidence calibration and top keyword explanation, decoupled from UI.
+- [ ] **Phase 07 (Streamlit Live Application):** Interactive web application with real-time inspection, probability visualizers, and evaluation metric dashboards.
+- [ ] **Phase 08 (Project Review & Finalization):** Final academic report documentation, end-to-end verification, and release tagging.
 
 ---
 
@@ -229,12 +285,17 @@ python -m src.prepare_data --download
 python -m src.analyze_data
 ```
 
-### 6. Run Test Suite
+### 6. Run Preprocessing & Splitting Pipeline (Phase 04)
+```bash
+python -m src.preprocess --split
+```
+
+### 7. Run Test Suite
 ```bash
 pytest -v
 ```
 
-### 7. Launch Streamlit Application
+### 8. Launch Streamlit Application
 ```bash
 streamlit run app.py
 ```

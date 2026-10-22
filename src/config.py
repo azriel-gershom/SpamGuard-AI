@@ -19,6 +19,24 @@ DATA_SUMMARY_FILE: Path = REPORTS_DIR / "data_summary.json"
 EDA_SUMMARY_FILE: Path = REPORTS_DIR / "eda_summary.json"
 EDA_FINDINGS_FILE: Path = REPORTS_DIR / "eda_findings.md"
 
+# Dataset Splits (Phase 04)
+SPLITS_DIR: Path = PROCESSED_DATA_DIR / "splits"
+TRAIN_SPLIT_FILE: Path = SPLITS_DIR / "train.csv"
+VAL_SPLIT_FILE: Path = SPLITS_DIR / "validation.csv"
+TEST_SPLIT_FILE: Path = SPLITS_DIR / "test.csv"
+SPLIT_SUMMARY_FILE: Path = REPORTS_DIR / "split_summary.json"
+
+# Split Ratios & Seed
+TRAIN_RATIO: float = 0.70
+VAL_RATIO: float = 0.15
+TEST_RATIO: float = 0.15
+
+# TF-IDF Feature Extraction Parameters
+TFIDF_MAX_FEATURES: int = 20000
+TFIDF_NGRAM_RANGE: tuple[int, int] = (1, 2)
+TFIDF_MIN_DF: int = 2
+TFIDF_MAX_DF: float = 0.98
+
 # Corpus Archive Specifications (Apache SpamAssassin Public Corpus)
 SPAMASSASSIN_BASE_URL: str = "https://spamassassin.apache.org/old/publiccorpus/"
 SPAMASSASSIN_ARCHIVES: list[dict[str, str | int]] = [
