@@ -40,6 +40,49 @@ The core model selected for text categorization is the **Multinomial Naïve Baye
 
 ---
 
+## 📦 Dataset & Ingestion Pipeline (Phase 02)
+
+### Official Data Source
+SpamGuard AI utilizes authentic, real-world labeled email records from the **[Apache SpamAssassin Public Corpus](https://spamassassin.apache.org/old/publiccorpus/)**.
+
+### Selected Archives
+The following 5 standard archives are ingested over secure HTTPS:
+1. `20030228_easy_ham.tar.bz2` (Standard legitimate personal & mailing list emails)
+2. `20030228_easy_ham_2.tar.bz2` (Additional clean ham messages)
+3. `20030228_hard_ham.tar.bz2` (Legitimate emails with formatting/HTML that closely mimic spam)
+4. `20030228_spam.tar.bz2` (Authentic unsolicited commercial and fraudulent emails)
+5. `20050311_spam_2.tar.bz2` (Modernized spam collection from subsequent campaigns)
+
+### Label Definitions
+Binary classification target:
+- **Ham (`0`):** Legitimate emails (`easy_ham`, `easy_ham_2`, `hard_ham`).
+- **Spam (`1`):** Unsolicited/malicious emails (`spam`, `spam_2`).
+
+### Safe Email Parsing & Sanitization Architecture
+Implemented in `src/prepare_data.py`:
+- **Archive Ingestion Security:** Tar archives are opened and read directly as byte streams without extracting unverified members to the local filesystem. Members are verified to be regular files; symlinks, directories, path traversal sequences (`..`), null bytes, oversized members (>10MB), and administrative shell scripts (`cmds`) are strictly rejected.
+- **MIME & Encoding Normalization:** Decodes multi-part MIME headers across multiple character sets (UTF-8, ISO-8859-1, Windows-1252, ASCII) via Python's standard `email` and `email.header` modules.
+- **Body Extraction & HTML Fallback:** Walks message parts to extract `text/plain` bodies while strictly excluding binary attachments (`Content-Disposition: attachment`). When only HTML is present (`text/html`), a custom parser (`SafeHTMLTextExtractor`) safely extracts human-readable text while discarding `<script>`, `<style>`, and other non-content tags without executing or rendering HTML.
+- **Leakage Prevention:** Server-generated transport headers, routing hops, and SpamAssassin-generated scoring tags (such as `X-Spam-Status`, `X-Spam-Flag`) are completely excluded. Only the decoded `subject` and `body` constitute the classification `text`.
+- **Text Normalization:** Applies Unicode NFKC normalization, standardizes line breaks (`\r\n` $\rightarrow$ `\n`), strips null bytes, and trims whitespace while preserving spam indicators (URLs, monetary figures, capitalization, punctuation).
+- **Deduplication & Conflict Resolution:** Calculates SHA-256 hashes of normalized content. Identical texts appearing across multiple archives are deduplicated deterministically. Conflicting-label instances (identical content flagged as both Ham and Spam) are flagged and excluded entirely.
+
+### Dataset Metrics (`reports/data_summary.json`)
+- **Total Source Archive Members:** 6,056 (including non-email administrative entries)
+- **Parsed Email Messages:** 6,046
+- **Duplicates Removed:** 123
+- **Conflicting Label Messages:** 0
+- **Final Usable Messages:** 5,923
+  - **Ham (`0`):** 4,109 (69.37%)
+  - **Spam (`1`):** 1,814 (30.63%)
+- **Character Length Summary:** Minimum: 9 | Maximum: 194,844 | Mean: 2,063.1 | Median: 1,084.0
+
+### Limitations & Responsible Use
+- **Historical Nature:** The Apache SpamAssassin public corpus is a historical cybersecurity dataset (circa 2002–2006). While highly effective for foundational NLP research, it should not be considered fully representative of modern zero-day phishing, spear-phishing, or AI-generated social engineering campaigns.
+- **Responsible Use & Privacy:** Corpus messages are used solely for offline educational and research analysis. Corpus content must never be sent or relayed to live mail servers or external email addresses.
+
+---
+
 ## 🏗️ Repository Architecture
 
 ```text
@@ -47,18 +90,22 @@ SpamGuard-AI/
 ├── app.py                  # Streamlit web application starter
 ├── requirements.txt        # Pinned project dependencies
 ├── README.md               # Project documentation and specifications
-├── .gitignore              # Git ignore rules for venv, cache, and artifacts
+├── .gitignore              # Git ignore rules for venv, cache, and raw/processed data
+├── pytest.ini              # Pytest configuration (pythonpath = .)
 ├── src/
 │   ├── __init__.py         # Core package definition
-│   └── config.py           # Path constants and pipeline configurations
+│   ├── config.py           # Path constants and pipeline configurations
+│   └── prepare_data.py     # Phase 02: Safe email download, parsing, and export
 ├── data/
-│   ├── raw/                # Original authentic datasets (.gitkeep)
-│   └── processed/          # Cleaned, tokenized datasets (.gitkeep)
+│   ├── raw/                # Downloaded Apache SpamAssassin tar.bz2 archives (gitignored)
+│   └── processed/          # Cleaned emails.csv dataset (gitignored)
 ├── models/                 # Serialized model & vectorizer artifacts (.gitkeep)
 ├── reports/
+│   ├── data_summary.json   # Computed dataset statistics and SHA-256 archive hashes
 │   └── figures/            # Evaluation graphs, confusion matrices (.gitkeep)
 ├── tests/
-│   └── test_smoke.py       # Pytest smoke test suite
+│   ├── test_smoke.py       # Phase 01: Project foundation smoke tests
+│   └── test_prepare_data.py# Phase 02: Unit and integration tests for data parsing
 └── docs/                   # Additional architecture & academic documentation
 ```
 
@@ -75,8 +122,18 @@ SpamGuard-AI/
 - [x] Functional minimal Streamlit starter interface (`app.py`).
 - [x] Pytest smoke test suite verifying paths, imports, and syntax.
 
+### ✅ Implemented in Phase 02 (Dataset Preparation)
+- [x] Automated HTTPS download and SHA-256 verification of 5 official Apache SpamAssassin archives.
+- [x] Secure in-memory archive extraction preventing directory traversal and symlink vulnerabilities.
+- [x] Robust MIME subject decoding and character encoding fallbacks.
+- [x] Multipart extraction prioritizing plain text with non-executing HTML text fallback.
+- [x] Exclusion of attachments and transport/spam metadata to prevent data leakage.
+- [x] Content-hash deduplication and conflicting-label exclusion.
+- [x] Exported standardized dataset to `data/processed/emails.csv` (5,923 records).
+- [x] Exported verified dataset metrics to `reports/data_summary.json`.
+- [x] Comprehensive unit and integration test suite (`tests/test_prepare_data.py`).
+
 ### ⏳ Planned Future Phases
-- [ ] **Phase 02 (Data Ingestion & Validation):** Acquire authentic, real-world labeled email data (e.g., SMS/Email spam corpus); clean and validate without leakage.
 - [ ] **Phase 03 (Feature Engineering & Model Training):** Stratified train/test split; TF-IDF fit strictly on training set; Multinomial Naïve Bayes training; compute genuine Accuracy, Precision, Recall, and F1-Score.
 - [ ] **Phase 04 (Inference Engine & Testing):** Standalone inference class with probability scoring and keyword explanations, isolated from UI.
 - [ ] **Phase 05 (Streamlit Live Application):** Live interactive email testing, confidence meters, and evaluation analytics.
@@ -84,17 +141,12 @@ SpamGuard-AI/
 
 ---
 
-## ⚡ Setup & Installation
+## ⚡ Setup & Execution
 
 ### 1. Prerequisites
 Ensure Python 3.12 is installed on your system.
 
-### 2. Clone / Open Project
-```bash
-cd /path/to/SpamGuard-AI
-```
-
-### 3. Activate Virtual Environment
+### 2. Activate Virtual Environment
 ```bash
 # macOS / Linux:
 source .venv/bin/activate
@@ -103,12 +155,19 @@ source .venv/bin/activate
 # .venv\Scripts\activate
 ```
 
-### 4. Install Dependencies
+### 3. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Run Smoke Tests
+### 4. Run Dataset Preparation Pipeline
+To download the official SpamAssassin archives (if not already downloaded) and build `data/processed/emails.csv` and `reports/data_summary.json`:
+```bash
+python -m src.prepare_data --download
+```
+
+### 5. Run Test Suite
+To run all unit, smoke, and integration tests:
 ```bash
 pytest -v
 ```

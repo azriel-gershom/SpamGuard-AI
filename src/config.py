@@ -13,6 +13,20 @@ REPORTS_DIR: Path = BASE_DIR / "reports"
 FIGURES_DIR: Path = REPORTS_DIR / "figures"
 DOCS_DIR: Path = BASE_DIR / "docs"
 
+# Dataset Paths & Artifacts
+PROCESSED_DATA_FILE: Path = PROCESSED_DATA_DIR / "emails.csv"
+DATA_SUMMARY_FILE: Path = REPORTS_DIR / "data_summary.json"
+
+# Corpus Archive Specifications (Apache SpamAssassin Public Corpus)
+SPAMASSASSIN_BASE_URL: str = "https://spamassassin.apache.org/old/publiccorpus/"
+SPAMASSASSIN_ARCHIVES: list[dict[str, str | int]] = [
+    {"filename": "20030228_easy_ham.tar.bz2", "group": "easy_ham", "label": 0},
+    {"filename": "20030228_easy_ham_2.tar.bz2", "group": "easy_ham_2", "label": 0},
+    {"filename": "20030228_hard_ham.tar.bz2", "group": "hard_ham", "label": 0},
+    {"filename": "20030228_spam.tar.bz2", "group": "spam", "label": 1},
+    {"filename": "20050311_spam_2.tar.bz2", "group": "spam_2", "label": 1},
+]
+
 # Serialized Model Artifact Paths
 MODEL_PATH: Path = MODELS_DIR / "spam_classifier_nb.joblib"
 VECTORIZER_PATH: Path = MODELS_DIR / "tfidf_vectorizer.joblib"

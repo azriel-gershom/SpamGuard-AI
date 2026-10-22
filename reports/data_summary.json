@@ -1,0 +1,70 @@
+{
+  "dataset_name": "Apache SpamAssassin Public Corpus (Normalized)",
+  "total_source_records": 6056,
+  "final_usable_messages": 5923,
+  "spam_count": 1814,
+  "ham_count": 4109,
+  "spam_percentage": 30.63,
+  "ham_percentage": 69.37,
+  "removed_duplicates": 123,
+  "conflicting_label_records": 0,
+  "empty_or_invalid_count": 0,
+  "parsing_failure_count": 0,
+  "counts_by_source_archive": {
+    "20030228_easy_ham.tar.bz2": 2502,
+    "20030228_easy_ham_2.tar.bz2": 1402,
+    "20030228_hard_ham.tar.bz2": 252,
+    "20030228_spam.tar.bz2": 502,
+    "20050311_spam_2.tar.bz2": 1398
+  },
+  "final_counts_by_source_archive": {
+    "20030228_easy_ham.tar.bz2": 2472,
+    "20030228_easy_ham_2.tar.bz2": 1389,
+    "20050311_spam_2.tar.bz2": 1332,
+    "20030228_spam.tar.bz2": 482,
+    "20030228_hard_ham.tar.bz2": 248
+  },
+  "email_char_length_stats": {
+    "min": 9,
+    "max": 194844,
+    "mean": 2063.1,
+    "median": 1084.0
+  },
+  "source_archives": [
+    {
+      "filename": "20030228_easy_ham.tar.bz2",
+      "group": "easy_ham",
+      "label": 0,
+      "url": "https://spamassassin.apache.org/old/publiccorpus/20030228_easy_ham.tar.bz2",
+      "sha256": "2b7b65904bcfcc31d2b5f51946f2d261370b257402cbbd62930b46ab83367438"
+    },
+    {
+      "filename": "20030228_easy_ham_2.tar.bz2",
+      "group": "easy_ham_2",
+      "label": 0,
+      "url": "https://spamassassin.apache.org/old/publiccorpus/20030228_easy_ham_2.tar.bz2",
+      "sha256": "b4bd3dc5ae5b40f38e99a0e41ad7d16b428b56e818e3a6ffa07330d62004dd38"
+    },
+    {
+      "filename": "20030228_hard_ham.tar.bz2",
+      "group": "hard_ham",
+      "label": 0,
+      "url": "https://spamassassin.apache.org/old/publiccorpus/20030228_hard_ham.tar.bz2",
+      "sha256": "ce2ce67880643dbde65ea7f85bffbfe4417349c4bd80b6b0de56262ae6b0a9c9"
+    },
+    {
+      "filename": "20030228_spam.tar.bz2",
+      "group": "spam",
+      "label": 1,
+      "url": "https://spamassassin.apache.org/old/publiccorpus/20030228_spam.tar.bz2",
+      "sha256": "c08debc32413804949a866be45ef78195cec2cbafd1da744ed76cdb860589743"
+    },
+    {
+      "filename": "20050311_spam_2.tar.bz2",
+      "group": "spam_2",
+      "label": 1,
+      "url": "https://spamassassin.apache.org/old/publiccorpus/20050311_spam_2.tar.bz2",
+      "sha256": "44280a0e28bf7645b2279e8e42659271ad82c6f40bf8d364dbda7f1df344a765"
+    }
+  ]
+}
