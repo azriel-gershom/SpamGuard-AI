@@ -16,6 +16,8 @@ DOCS_DIR: Path = BASE_DIR / "docs"
 # Dataset Paths & Artifacts
 PROCESSED_DATA_FILE: Path = PROCESSED_DATA_DIR / "emails.csv"
 DATA_SUMMARY_FILE: Path = REPORTS_DIR / "data_summary.json"
+EDA_SUMMARY_FILE: Path = REPORTS_DIR / "eda_summary.json"
+EDA_FINDINGS_FILE: Path = REPORTS_DIR / "eda_findings.md"
 
 # Corpus Archive Specifications (Apache SpamAssassin Public Corpus)
 SPAMASSASSIN_BASE_URL: str = "https://spamassassin.apache.org/old/publiccorpus/"

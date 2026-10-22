@@ -1,0 +1,319 @@
+{
+  "dataset_validation": {
+    "total_records": 5923,
+    "labels_present": [
+      0,
+      1
+    ],
+    "missing_values": {
+      "message_id": 0,
+      "subject": 0,
+      "body": 0,
+      "text": 0,
+      "label": 0,
+      "source_group": 0,
+      "source_archive": 0
+    },
+    "empty_text_records": 0,
+    "duplicate_message_ids": 0,
+    "duplicate_texts": 0,
+    "subject_available_count": 5907,
+    "subject_available_pct": 99.73,
+    "body_available_count": 5901,
+    "body_available_pct": 99.63,
+    "source_group_distribution": {
+      "easy_ham": 2472,
+      "easy_ham_2": 1389,
+      "spam_2": 1332,
+      "spam": 482,
+      "hard_ham": 248
+    },
+    "source_archive_distribution": {
+      "20030228_easy_ham.tar.bz2": 2472,
+      "20030228_easy_ham_2.tar.bz2": 1389,
+      "20050311_spam_2.tar.bz2": 1332,
+      "20030228_spam.tar.bz2": 482,
+      "20030228_hard_ham.tar.bz2": 248
+    }
+  },
+  "class_distribution": {
+    "total": 5923,
+    "spam_count": 1814,
+    "ham_count": 4109,
+    "spam_percentage": 30.63,
+    "ham_percentage": 69.37,
+    "imbalance_ratio": 2.27
+  },
+  "length_statistics": {
+    "character_length": {
+      "overall": {
+        "min": 9.0,
+        "max": 194844.0,
+        "mean": 2063.1,
+        "median": 1084.0,
+        "std": 5173.4,
+        "q25": 622.0,
+        "q75": 1872.5,
+        "q99": 16779.72
+      },
+      "ham": {
+        "min": 45.0,
+        "max": 194844.0,
+        "mean": 1885.19,
+        "median": 1022.0,
+        "std": 4975.1,
+        "q25": 570.0,
+        "q75": 1714.0,
+        "q99": 14252.36
+      },
+      "spam": {
+        "min": 9.0,
+        "max": 126044.0,
+        "mean": 2466.1,
+        "median": 1226.0,
+        "std": 5577.14,
+        "q25": 743.25,
+        "q75": 2255.25,
+        "q99": 18524.41
+      }
+    },
+    "word_count": {
+      "overall": {
+        "min": 1.0,
+        "max": 14959.0,
+        "mean": 288.11,
+        "median": 152.0,
+        "std": 638.43,
+        "q25": 85.0,
+        "q75": 270.0,
+        "q99": 2669.56
+      },
+      "ham": {
+        "min": 8.0,
+        "max": 14959.0,
+        "mean": 273.68,
+        "median": 150.0,
+        "std": 621.79,
+        "q25": 81.0,
+        "q75": 262.0,
+        "q99": 2106.08
+      },
+      "spam": {
+        "min": 1.0,
+        "max": 11625.0,
+        "mean": 320.81,
+        "median": 157.0,
+        "std": 673.66,
+        "q25": 97.0,
+        "q75": 291.75,
+        "q99": 2808.35
+      }
+    }
+  },
+  "lexical_patterns": {
+    "ham": {
+      "total_emails": 4109,
+      "has_url_count": 3496,
+      "has_url_percentage": 85.08,
+      "has_digit_count": 3673,
+      "has_digit_percentage": 89.39,
+      "has_exclamation_count": 1379,
+      "has_exclamation_percentage": 33.56,
+      "exclamation_count_mean": 0.86,
+      "exclamation_count_median": 0.0,
+      "subject_char_length_mean": 37.3,
+      "subject_char_length_median": 34.0,
+      "subject_word_count_mean": 5.94,
+      "subject_word_count_median": 5.0
+    },
+    "spam": {
+      "total_emails": 1814,
+      "has_url_count": 1022,
+      "has_url_percentage": 56.34,
+      "has_digit_count": 1702,
+      "has_digit_percentage": 93.83,
+      "has_exclamation_count": 1426,
+      "has_exclamation_percentage": 78.61,
+      "exclamation_count_mean": 5.84,
+      "exclamation_count_median": 3.0,
+      "subject_char_length_mean": 40.0,
+      "subject_char_length_median": 37.0,
+      "subject_word_count_mean": 5.94,
+      "subject_word_count_median": 6.0
+    }
+  },
+  "top_frequent_terms": {
+    "spam": [
+      {
+        "term": "font",
+        "count": 4037
+      },
+      {
+        "term": "com",
+        "count": 3677
+      },
+      {
+        "term": "http",
+        "count": 3080
+      },
+      {
+        "term": "email",
+        "count": 2711
+      },
+      {
+        "term": "free",
+        "count": 2705
+      },
+      {
+        "term": "www",
+        "count": 2028
+      },
+      {
+        "term": "click",
+        "count": 1869
+      },
+      {
+        "term": "nbsp",
+        "count": 1702
+      },
+      {
+        "term": "money",
+        "count": 1600
+      },
+      {
+        "term": "business",
+        "count": 1588
+      },
+      {
+        "term": "mail",
+        "count": 1566
+      },
+      {
+        "term": "list",
+        "count": 1379
+      },
+      {
+        "term": "information",
+        "count": 1299
+      },
+      {
+        "term": "size",
+        "count": 1289
+      },
+      {
+        "term": "time",
+        "count": 1265
+      },
+      {
+        "term": "people",
+        "count": 1190
+      },
+      {
+        "term": "new",
+        "count": 1183
+      },
+      {
+        "term": "color",
+        "count": 1178
+      },
+      {
+        "term": "address",
+        "count": 1153
+      },
+      {
+        "term": "net",
+        "count": 1139
+      }
+    ],
+    "ham": [
+      {
+        "term": "http",
+        "count": 11598
+      },
+      {
+        "term": "com",
+        "count": 9939
+      },
+      {
+        "term": "www",
+        "count": 6292
+      },
+      {
+        "term": "net",
+        "count": 4831
+      },
+      {
+        "term": "list",
+        "count": 4209
+      },
+      {
+        "term": "linux",
+        "count": 3849
+      },
+      {
+        "term": "users",
+        "count": 2706
+      },
+      {
+        "term": "just",
+        "count": 2388
+      },
+      {
+        "term": "use",
+        "count": 2365
+      },
+      {
+        "term": "listinfo",
+        "count": 2301
+      },
+      {
+        "term": "lists",
+        "count": 2272
+      },
+      {
+        "term": "org",
+        "count": 2244
+      },
+      {
+        "term": "new",
+        "count": 2240
+      },
+      {
+        "term": "like",
+        "count": 2027
+      },
+      {
+        "term": "rpm",
+        "count": 2017
+      },
+      {
+        "term": "ilug",
+        "count": 1910
+      },
+      {
+        "term": "time",
+        "count": 1882
+      },
+      {
+        "term": "razor",
+        "count": 1865
+      },
+      {
+        "term": "mailman",
+        "count": 1840
+      },
+      {
+        "term": "html",
+        "count": 1801
+      }
+    ]
+  },
+  "generated_figures": {
+    "class_distribution": "/Users/azriel/Documents/projects/AI_mp/reports/figures/class_distribution.png",
+    "email_length_distribution": "/Users/azriel/Documents/projects/AI_mp/reports/figures/email_length_distribution.png",
+    "length_comparison": "/Users/azriel/Documents/projects/AI_mp/reports/figures/length_comparison.png",
+    "top_spam_words": "/Users/azriel/Documents/projects/AI_mp/reports/figures/top_spam_words.png",
+    "top_ham_words": "/Users/azriel/Documents/projects/AI_mp/reports/figures/top_ham_words.png",
+    "url_pattern_comparison": "/Users/azriel/Documents/projects/AI_mp/reports/figures/url_pattern_comparison.png"
+  }
+}

@@ -77,6 +77,46 @@ Implemented in `src/prepare_data.py`:
   - **Spam (`1`):** 1,814 (30.63%)
 - **Character Length Summary:** Minimum: 9 | Maximum: 194,844 | Mean: 2,063.1 | Median: 1,084.0
 
+---
+
+## 📊 Exploratory Data Analysis (Phase 03)
+
+Implemented in `src/analyze_data.py`, Phase 03 conducts an exhaustive, descriptive examination of email characteristics without modifying the underlying data or fitting machine learning classifiers.
+
+### Execution Command
+```bash
+python -m src.analyze_data
+```
+
+### Key Statistical Findings & Observable Patterns
+1. **Class Imbalance & Ratio:**
+   - 4,109 Ham (69.37%) vs. 1,814 Spam (30.63%), establishing an imbalance ratio of **2.27 : 1**.
+   - A naive majority-class model would achieve 69.37% Accuracy while catching 0% of spam. This demonstrates why **Precision, Recall, and F1-score (CO5)** are essential evaluation metrics.
+2. **Length Distributions:**
+   - **Spam Emails:** Mean = 2,466.1 characters, Median = 1,226.0 characters, Mean Word Count = 320.8 words.
+   - **Ham Emails:** Mean = 1,885.2 characters, Median = 1,022.0 characters, Mean Word Count = 273.7 words.
+   - Both classes exhibit heavy-tailed distributions with extreme outliers. Spam messages have higher median lengths due to HTML fallback content, tracking tokens, and promotional disclaimers.
+3. **Punctuation & Urgency Markers:**
+   - **Exclamation Marks (`!`):** Present in **78.61%** of spam emails (mean = 5.84 per email), compared to only **33.56%** of ham emails (mean = 0.86 per email).
+4. **Structural Lexical Indicators (URLs & Digits):**
+   - **Digits:** Present in **93.83%** of spam and **89.39%** of ham.
+   - **URLs:** Found in **85.08%** of ham emails and **56.34%** of spam emails. In developer mailing-list datasets (such as SpamAssassin), legitimate messages consistently append subscription, archive, and repository URLs in footers, demonstrating that "URLs imply spam" is a flawed heuristic.
+5. **Top Distinctive Frequent Terms (Non-Stop-Words):**
+   - **Spam:** `font`, `com`, `http`, `email`, `free`, `www`, `click`, `nbsp`, `money`, `business`, `mail`.
+   - **Ham:** `http`, `com`, `www`, `net`, `list`, `linux`, `users`, `just`, `use`, `listinfo`, `lists`, `org`, `rpm`.
+
+### Generated Visualizations (`reports/figures/`)
+1. `class_distribution.png`: Bar chart of class counts and percentages with imbalance ratio annotation.
+2. `email_length_distribution.png`: Character length histogram comparing Ham and Spam density (with 10,000 char visual clipping threshold disclosed).
+3. `length_comparison.png`: Side-by-side boxplots showing median, IQR, and mean diamond markers.
+4. `top_spam_words.png`: Horizontal bar chart of the top 20 frequent words in spam.
+5. `top_ham_words.png`: Horizontal bar chart of the top 20 frequent words in ham.
+6. `url_pattern_comparison.png`: Grouped comparative bar chart of URL, digit, and exclamation mark presence.
+
+### Comprehensive Reports
+- `reports/eda_summary.json`: Complete machine-readable summary statistics and distributions.
+- `reports/eda_findings.md`: In-depth academic discussion covering data quality, observed class differences, class imbalance implications, and metric justification.
+
 ### Limitations & Responsible Use
 - **Historical Nature:** The Apache SpamAssassin public corpus is a historical cybersecurity dataset (circa 2002–2006). While highly effective for foundational NLP research, it should not be considered fully representative of modern zero-day phishing, spear-phishing, or AI-generated social engineering campaigns.
 - **Responsible Use & Privacy:** Corpus messages are used solely for offline educational and research analysis. Corpus content must never be sent or relayed to live mail servers or external email addresses.
@@ -95,17 +135,27 @@ SpamGuard-AI/
 ├── src/
 │   ├── __init__.py         # Core package definition
 │   ├── config.py           # Path constants and pipeline configurations
-│   └── prepare_data.py     # Phase 02: Safe email download, parsing, and export
+│   ├── prepare_data.py     # Phase 02: Safe email download, parsing, and export
+│   └── analyze_data.py     # Phase 03: Exploratory data analysis & visualization engine
 ├── data/
 │   ├── raw/                # Downloaded Apache SpamAssassin tar.bz2 archives (gitignored)
 │   └── processed/          # Cleaned emails.csv dataset (gitignored)
 ├── models/                 # Serialized model & vectorizer artifacts (.gitkeep)
 ├── reports/
-│   ├── data_summary.json   # Computed dataset statistics and SHA-256 archive hashes
-│   └── figures/            # Evaluation graphs, confusion matrices (.gitkeep)
+│   ├── data_summary.json   # Phase 02: Dataset ingestion statistics & SHA-256 hashes
+│   ├── eda_summary.json    # Phase 03: Quantitative EDA summary metrics
+│   ├── eda_findings.md     # Phase 03: Comprehensive academic findings report
+│   └── figures/            # Phase 03: Generated visualization charts
+│       ├── class_distribution.png
+│       ├── email_length_distribution.png
+│       ├── length_comparison.png
+│       ├── top_spam_words.png
+│       ├── top_ham_words.png
+│       └── url_pattern_comparison.png
 ├── tests/
 │   ├── test_smoke.py       # Phase 01: Project foundation smoke tests
-│   └── test_prepare_data.py# Phase 02: Unit and integration tests for data parsing
+│   ├── test_prepare_data.py# Phase 02: Unit and integration tests for data parsing
+│   └── test_eda.py         # Phase 03: Unit and integration tests for EDA module
 └── docs/                   # Additional architecture & academic documentation
 ```
 
@@ -133,11 +183,20 @@ SpamGuard-AI/
 - [x] Exported verified dataset metrics to `reports/data_summary.json`.
 - [x] Comprehensive unit and integration test suite (`tests/test_prepare_data.py`).
 
+### ✅ Implemented in Phase 03 (Exploratory Data Analysis)
+- [x] Modular EDA module with automated validation, length statistics, and pattern metrics (`src/analyze_data.py`).
+- [x] Verified dataset integrity: 5,923 valid emails, 0 missing texts/labels, 0 duplicates, 0 conflicting labels.
+- [x] Generated 6 professional publication-quality figures under `reports/figures/`.
+- [x] Exported comprehensive metrics to `reports/eda_summary.json`.
+- [x] Authored thorough academic findings report (`reports/eda_findings.md`).
+- [x] Pytest unit and integration test suite with 9 dedicated tests (`tests/test_eda.py`).
+- [x] Full test suite (24 tests) passing cleanly.
+
 ### ⏳ Planned Future Phases
-- [ ] **Phase 03 (Feature Engineering & Model Training):** Stratified train/test split; TF-IDF fit strictly on training set; Multinomial Naïve Bayes training; compute genuine Accuracy, Precision, Recall, and F1-Score.
-- [ ] **Phase 04 (Inference Engine & Testing):** Standalone inference class with probability scoring and keyword explanations, isolated from UI.
-- [ ] **Phase 05 (Streamlit Live Application):** Live interactive email testing, confidence meters, and evaluation analytics.
-- [ ] **Phase 06 (Project Review & Finalization):** Final academic report documentation, end-to-end verification, and release tagging.
+- [ ] **Phase 04 (Feature Engineering & Model Training):** Stratified train/test split; TF-IDF fit strictly on training set; Multinomial Naïve Bayes training; compute genuine Accuracy, Precision, Recall, and F1-Score.
+- [ ] **Phase 05 (Inference Engine & Testing):** Standalone inference class with probability scoring and keyword explanations, isolated from UI.
+- [ ] **Phase 06 (Streamlit Live Application):** Live interactive email testing, confidence meters, and evaluation analytics.
+- [ ] **Phase 07 (Project Review & Finalization):** Final academic report documentation, end-to-end verification, and release tagging.
 
 ---
 
@@ -160,19 +219,22 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Run Dataset Preparation Pipeline
-To download the official SpamAssassin archives (if not already downloaded) and build `data/processed/emails.csv` and `reports/data_summary.json`:
+### 4. Run Dataset Preparation Pipeline (Phase 02)
 ```bash
 python -m src.prepare_data --download
 ```
 
-### 5. Run Test Suite
-To run all unit, smoke, and integration tests:
+### 5. Run Exploratory Data Analysis Pipeline (Phase 03)
+```bash
+python -m src.analyze_data
+```
+
+### 6. Run Test Suite
 ```bash
 pytest -v
 ```
 
-### 6. Launch Streamlit Application
+### 7. Launch Streamlit Application
 ```bash
 streamlit run app.py
 ```
