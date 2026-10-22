@@ -47,10 +47,16 @@ SPAMASSASSIN_ARCHIVES: list[dict[str, str | int]] = [
     {"filename": "20050311_spam_2.tar.bz2", "group": "spam_2", "label": 1},
 ]
 
-# Serialized Model Artifact Paths
-MODEL_PATH: Path = MODELS_DIR / "spam_classifier_nb.joblib"
+# Serialized Model Artifact Paths (Phase 05)
+SAVED_PIPELINE_PATH: Path = MODELS_DIR / "spam_pipeline.joblib"
+MODEL_PATH: Path = SAVED_PIPELINE_PATH  # Alias for backward compatibility
 VECTORIZER_PATH: Path = MODELS_DIR / "tfidf_vectorizer.joblib"
 METRICS_PATH: Path = REPORTS_DIR / "model_metrics.json"
+TRAINING_SUMMARY_FILE: Path = REPORTS_DIR / "training_summary.json"
+MODEL_INSIGHTS_FILE: Path = REPORTS_DIR / "model_insights.json"
+
+# Phase 05 Hyperparameter Search Space
+ALPHA_CANDIDATES: list[float] = [0.1, 0.5, 1.0, 2.0, 5.0]
 
 # Pipeline Configurations
 RANDOM_STATE: int = 42

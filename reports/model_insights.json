@@ -1,0 +1,358 @@
+{
+  "methodology": "Class-conditional log-probability difference: log P(token|Spam) - log P(token|Ham). Positive values indicate tokens with higher likelihood under Spam; negative values indicate higher likelihood under Ham. These reflect learned statistical associations, not causal determinations.",
+  "vocabulary_size": 20000,
+  "top_spam_predictive_tokens": [
+    {
+      "token": "mortgage",
+      "log_prob_diff": 5.4218,
+      "spam_log_prob": -7.2686,
+      "ham_log_prob": -12.6903,
+      "association": "Spam"
+    },
+    {
+      "token": "life insurance",
+      "log_prob_diff": 4.7813,
+      "spam_log_prob": -8.0257,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "spamassassin sightings",
+      "log_prob_diff": 4.7021,
+      "spam_log_prob": -7.3407,
+      "ham_log_prob": -12.0428,
+      "association": "Spam"
+    },
+    {
+      "token": "form below",
+      "log_prob_diff": 4.688,
+      "spam_log_prob": -8.119,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "city state",
+      "log_prob_diff": 4.6155,
+      "spam_log_prob": -8.1915,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "refinance",
+      "log_prob_diff": 4.6048,
+      "spam_log_prob": -7.9277,
+      "ham_log_prob": -12.5326,
+      "association": "Spam"
+    },
+    {
+      "token": "insuranceiq",
+      "log_prob_diff": 4.5535,
+      "spam_log_prob": -8.2535,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "insuranceiq com",
+      "log_prob_diff": 4.5462,
+      "spam_log_prob": -8.2608,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "www insuranceiq",
+      "log_prob_diff": 4.5337,
+      "spam_log_prob": -8.2733,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "below for",
+      "log_prob_diff": 4.5255,
+      "spam_log_prob": -8.2815,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "our list",
+      "log_prob_diff": 4.5168,
+      "spam_log_prob": -8.2902,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "optout",
+      "log_prob_diff": 4.513,
+      "spam_log_prob": -8.294,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "who does",
+      "log_prob_diff": 4.4827,
+      "spam_log_prob": -8.3244,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "receive our",
+      "log_prob_diff": 4.4783,
+      "spam_log_prob": -8.0516,
+      "ham_log_prob": -12.5299,
+      "association": "Spam"
+    },
+    {
+      "token": "no obligation",
+      "log_prob_diff": 4.4145,
+      "spam_log_prob": -8.2097,
+      "ham_log_prob": -12.6242,
+      "association": "Spam"
+    },
+    {
+      "token": "contact you",
+      "log_prob_diff": 4.4073,
+      "spam_log_prob": -8.3997,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "lenders",
+      "log_prob_diff": 4.3804,
+      "spam_log_prob": -8.1699,
+      "ham_log_prob": -12.5503,
+      "association": "Spam"
+    },
+    {
+      "token": "lose weight",
+      "log_prob_diff": 4.3795,
+      "spam_log_prob": -8.4275,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "insurancemail",
+      "log_prob_diff": 4.373,
+      "spam_log_prob": -8.434,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "www insurancemail",
+      "log_prob_diff": 4.373,
+      "spam_log_prob": -8.434,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "insurancemail net",
+      "log_prob_diff": 4.373,
+      "spam_log_prob": -8.434,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "please allow",
+      "log_prob_diff": 4.3722,
+      "spam_log_prob": -8.4348,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "increase your",
+      "log_prob_diff": 4.3632,
+      "spam_log_prob": -8.4438,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "please fill",
+      "log_prob_diff": 4.3628,
+      "spam_log_prob": -8.4442,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    },
+    {
+      "token": "our mailings",
+      "log_prob_diff": 4.3567,
+      "spam_log_prob": -8.4503,
+      "ham_log_prob": -12.807,
+      "association": "Spam"
+    }
+  ],
+  "top_ham_predictive_tokens": [
+    {
+      "token": "rpm list",
+      "log_prob_diff": -5.2317,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -6.9068,
+      "association": "Ham"
+    },
+    {
+      "token": "newsisfree",
+      "log_prob_diff": -5.1413,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -6.9972,
+      "association": "Ham"
+    },
+    {
+      "token": "newsisfree com",
+      "log_prob_diff": -5.1413,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -6.9972,
+      "association": "Ham"
+    },
+    {
+      "token": "www newsisfree",
+      "log_prob_diff": -5.1413,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -6.9972,
+      "association": "Ham"
+    },
+    {
+      "token": "freshrpms",
+      "log_prob_diff": -5.1027,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.0357,
+      "association": "Ham"
+    },
+    {
+      "token": "freshrpms net",
+      "log_prob_diff": -5.0893,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.0492,
+      "association": "Ham"
+    },
+    {
+      "token": "razor",
+      "log_prob_diff": -4.967,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.1714,
+      "association": "Ham"
+    },
+    {
+      "token": "rpm",
+      "log_prob_diff": -4.8588,
+      "spam_log_prob": -11.6416,
+      "ham_log_prob": -6.7828,
+      "association": "Ham"
+    },
+    {
+      "token": "wrote",
+      "log_prob_diff": -4.8123,
+      "spam_log_prob": -11.5995,
+      "ham_log_prob": -6.7872,
+      "association": "Ham"
+    },
+    {
+      "token": "razor users",
+      "log_prob_diff": -4.7714,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.3671,
+      "association": "Ham"
+    },
+    {
+      "token": "exmh",
+      "log_prob_diff": -4.7506,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.3878,
+      "association": "Ham"
+    },
+    {
+      "token": "redhat",
+      "log_prob_diff": -4.6891,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.4494,
+      "association": "Ham"
+    },
+    {
+      "token": "re ilug",
+      "log_prob_diff": -4.5384,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.6001,
+      "association": "Ham"
+    },
+    {
+      "token": "url http",
+      "log_prob_diff": -4.533,
+      "spam_log_prob": -11.322,
+      "ham_log_prob": -6.789,
+      "association": "Ham"
+    },
+    {
+      "token": "http lists",
+      "log_prob_diff": -4.5195,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.619,
+      "association": "Ham"
+    },
+    {
+      "token": "list rpm",
+      "log_prob_diff": -4.5191,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.6194,
+      "association": "Ham"
+    },
+    {
+      "token": "list mailing",
+      "log_prob_diff": -4.519,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.6194,
+      "association": "Ham"
+    },
+    {
+      "token": "list freshrpms",
+      "log_prob_diff": -4.5167,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.6218,
+      "association": "Ham"
+    },
+    {
+      "token": "lists freshrpms",
+      "log_prob_diff": -4.5131,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.6254,
+      "association": "Ham"
+    },
+    {
+      "token": "listinfo rpm",
+      "log_prob_diff": -4.5111,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.6274,
+      "association": "Ham"
+    },
+    {
+      "token": "not supplied",
+      "log_prob_diff": -4.4923,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.6462,
+      "association": "Ham"
+    },
+    {
+      "token": "date not",
+      "log_prob_diff": -4.4923,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.6462,
+      "association": "Ham"
+    },
+    {
+      "token": "apt",
+      "log_prob_diff": -4.4032,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.7353,
+      "association": "Ham"
+    },
+    {
+      "token": "redhat com",
+      "log_prob_diff": -4.3619,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.7766,
+      "association": "Ham"
+    },
+    {
+      "token": "matthias",
+      "log_prob_diff": -4.2917,
+      "spam_log_prob": -12.1385,
+      "ham_log_prob": -7.8468,
+      "association": "Ham"
+    }
+  ]
+}

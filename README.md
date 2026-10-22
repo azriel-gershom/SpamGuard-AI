@@ -166,6 +166,84 @@ While exact content and ID duplicates are strictly isolated, real-world mailing-
 
 ---
 
+## 🤖 Naïve Bayes Model Development (Phase 05)
+
+Implemented in `src/train.py`, Phase 05 trains, tunes, validates, and serializes the first end-to-end Multinomial Naïve Bayes email spam classification pipeline.
+
+### Execution Command
+```bash
+python -m src.train
+```
+
+### Core Architecture & Academic Principles
+
+1. **Multinomial Naïve Bayes Model:**
+   The classification decision relies on Bayes' theorem under the conditional feature independence assumption:
+   $$P(\text{class} \mid \mathbf{x}) \propto P(\text{class}) \prod_{i=1}^{d} P(w_i \mid \text{class})^{x_i}$$
+   In log-space to prevent numerical underflow:
+   $$\log P(\text{class} \mid \mathbf{x}) \propto \log P(\text{class}) + \sum_{i=1}^{d} x_i \log P(w_i \mid \text{class})$$
+   where $x_i$ represents the TF-IDF weight of token $w_i$, and $P(w_i \mid \text{class})$ is estimated from training document term frequencies.
+
+2. **Laplace / Lidstone Additive Smoothing ($\alpha$):**
+   To resolve the zero-frequency problem where an unseen token $w_i$ in training would otherwise collapse $P(w_i \mid \text{class})$ to zero, Laplace/Lidstone smoothing adds parameter $\alpha$ to feature counts:
+   $$\hat{P}(w_i \mid c) = \frac{N_{c, i} + \alpha}{N_c + \alpha \cdot |V|}$$
+   where $N_{c, i}$ is the aggregate TF-IDF weight for token $i$ in class $c$, $N_c$ is the total weight across all vocabulary in class $c$, and $|V|$ is the vocabulary size (20,000 features).
+   - $\alpha = 1.0$: Standard Laplace smoothing.
+   - $\alpha < 1.0$: Lidstone smoothing, allowing rarer words stronger discriminative weight while retaining smoothing guarantees.
+
+3. **Strict Train-Only Fitting (Leakage Prevention):**
+   - The Scikit-learn `Pipeline([('tfidf', build_tfidf_vectorizer()), ('classifier', MultinomialNB(alpha=alpha))])` is fitted **exclusively on the 4,145 training emails**.
+   - The TF-IDF vocabulary, document frequencies, and IDF weights are learned strictly from `train.csv`.
+   - **Crucial Rule:** The 889 validation emails are transformed using the fitted training statistics without refitting. The 889 test emails are **not accessed or evaluated** during Phase 05.
+
+### Baseline Comparison: Why Accuracy Alone Fails
+
+To demonstrate the critical necessity of **Precision, Recall, and F1-score (CO5)** on imbalanced datasets, a majority-class baseline was fitted using `DummyClassifier(strategy="most_frequent")`:
+
+| Model | Val Accuracy | Spam Precision | Spam Recall | Spam F1-Score |
+| :--- | :---: | :---: | :---: | :---: |
+| **Majority-Class Baseline** (`strategy="most_frequent"`) | 69.29% | 0.00% | 0.00% | 0.0000 |
+| **Multinomial Naïve Bayes** ($\alpha = 0.1$) | **97.86%** | **98.85%** | **94.14%** | **0.9644** |
+
+*Key Academic Finding:* The baseline achieves nearly 70% accuracy simply by predicting every email as legitimate ("Ham"), yet it catches zero spam emails. In real-world cybersecurity, high precision (protecting legitimate communications from false quarantines) and high recall (intercepting attacks) are required.
+
+### Hyperparameter Selection on Validation Partition
+
+The smoothing parameter $\alpha$ was tuned over fixed candidate values $\alpha \in \{0.1, 0.5, 1.0, 2.0, 5.0\}$ using the 889 validation emails (616 ham, 273 spam). The candidate with the highest spam-class F1-score was selected:
+
+| Candidate $\alpha$ | Val Accuracy | Val Precision (Spam) | Val Recall (Spam) | Val F1-Score (Spam) | True Positives | False Positives | False Negatives | True Negatives |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **$\mathbf{0.10}$ (Selected)** | **0.9786** | **0.9885** | **0.9414** | **0.9644** | **257** | **3** | **16** | **613** |
+| $0.50$ | 0.9708 | 0.9881 | 0.9158 | 0.9506 | 250 | 3 | 23 | 613 |
+| $1.00$ | 0.9640 | 0.9879 | 0.8938 | 0.9385 | 244 | 3 | 29 | 613 |
+| $2.00$ | 0.9516 | 1.0000 | 0.8425 | 0.9145 | 230 | 0 | 43 | 616 |
+| $5.00$ | 0.8841 | 1.0000 | 0.6227 | 0.7675 | 170 | 0 | 103 | 616 |
+
+> [!IMPORTANT]
+> **Validation Notice:** All metrics reported above are **Validation partition metrics** evaluated during model selection. The test partition (889 emails) remains completely untouched and held-out for independent evaluation in Phase 06.
+
+### Model Persistence & Reload Verification
+
+- The optimal pipeline ($\alpha = 0.1$) is serialized to `models/spam_pipeline.joblib` using Joblib.
+- The artifact encapsulates the complete fitted TF-IDF vectorizer (20,000 features) and fitted MultinomialNB classifier.
+- Post-save verification reloads the pipeline from disk, evaluates 100 validation samples, and verifies bit-for-bit identical discrete class predictions and probability distributions.
+- Checksum: SHA-256 integrity hash is recorded in `reports/training_summary.json`.
+
+### Model Interpretability & Learned Feature Associations
+
+Log-probability differences $\log P(w \mid \text{Spam}) - \log P(w \mid \text{Ham})$ capture tokens most strongly associated with each class (recorded in `reports/model_insights.json`):
+- **Top Spam Indicators:** `mortgage` (+5.42 diff), `life insurance` (+4.78 diff), `spamassassin sightings` (+4.70 diff), `form below` (+4.69 diff), `refinance` (+4.60 diff), `optout` (+4.51 diff).
+- **Top Ham Indicators:** `rpm list` (-5.23 diff), `newsisfree` (-5.14 diff), `freshrpms` (-5.10 diff), `razor` (-4.97 diff), `redhat` (-4.69 diff), `wrote` (-4.81 diff).
+- *Disclaimer:* These reflect learned empirical statistical associations in historical data, not causal determinations.
+
+### Historical Dataset Limitations
+
+Users and evaluators should recognize that the Apache SpamAssassin dataset comprises historical emails (circa 2002–2005):
+1. **Temporal Shift:** Modern spam tactics (e.g., Unicode zero-width spoofing, adversarial image text, shortened cloud URLs) are absent.
+2. **Domain Bias:** The legitimate email corpus primarily reflects open-source developer mailing lists (Linux, RPM, Razor), skewing vocabulary toward developer discussions.
+
+---
+
 ## 🏗️ Repository Architecture
 
 ```text
@@ -180,17 +258,22 @@ SpamGuard-AI/
 │   ├── config.py           # Path constants and pipeline configurations
 │   ├── prepare_data.py     # Phase 02: Safe email download, parsing, and export
 │   ├── analyze_data.py     # Phase 03: Exploratory data analysis & visualization engine
-│   └── preprocess.py       # Phase 04: Text cleaning, stratified splitting & TF-IDF factory
+│   ├── preprocess.py       # Phase 04: Text cleaning, stratified splitting & TF-IDF factory
+│   └── train.py            # Phase 05: Naïve Bayes pipeline training, tuning & persistence
 ├── data/
 │   ├── raw/                # Downloaded Apache SpamAssassin tar.bz2 archives (gitignored)
 │   └── processed/          # Cleaned emails.csv dataset (gitignored)
 │       └── splits/         # Phase 04: train.csv, validation.csv, test.csv (gitignored)
-├── models/                 # Serialized model & vectorizer artifacts (.gitkeep)
+├── models/
+│   ├── .gitkeep
+│   └── spam_pipeline.joblib# Phase 05: Serialized fitted pipeline (gitignored)
 ├── reports/
 │   ├── data_summary.json   # Phase 02: Dataset ingestion statistics & SHA-256 hashes
 │   ├── eda_summary.json    # Phase 03: Quantitative EDA summary metrics
 │   ├── eda_findings.md     # Phase 03: Comprehensive academic findings report
 │   ├── split_summary.json  # Phase 04: Partition statistics & leakage audit report
+│   ├── training_summary.json # Phase 05: Training metadata, baseline & validation metrics
+│   ├── model_insights.json # Phase 05: Top predictive token log probabilities
 │   └── figures/            # Phase 03: Generated visualization charts
 │       ├── class_distribution.png
 │       ├── email_length_distribution.png
@@ -202,7 +285,8 @@ SpamGuard-AI/
 │   ├── test_smoke.py       # Phase 01: Project foundation smoke tests
 │   ├── test_prepare_data.py# Phase 02: Unit and integration tests for data parsing
 │   ├── test_eda.py         # Phase 03: Unit and integration tests for EDA module
-│   └── test_preprocess.py  # Phase 04: Unit and integration tests for preprocessing & splits
+│   ├── test_preprocess.py  # Phase 04: Unit and integration tests for preprocessing & splits
+│   └── test_train.py       # Phase 05: Unit and integration tests for training pipeline
 └── docs/                   # Additional architecture & academic documentation
 ```
 
@@ -246,13 +330,24 @@ SpamGuard-AI/
 - [x] Exported partitioned CSV splits under `data/processed/splits/` (gitignored).
 - [x] Generated deterministic audit report (`reports/split_summary.json`).
 - [x] Automated unit and integration test suite with 14 tests (`tests/test_preprocess.py`).
-- [x] Full test suite (38 tests) passing cleanly.
+
+### ✅ Implemented in Phase 05 (Naïve Bayes Model Development)
+- [x] Reusable `build_model(alpha)` factory integrating TF-IDF vectorizer and Multinomial Naïve Bayes.
+- [x] Strict train-only fitting on 4,145 training emails (zero leakage from validation or test partitions).
+- [x] Majority-class baseline benchmark (`DummyClassifier`) demonstrating failure of accuracy-only metric on imbalanced data.
+- [x] Deterministic hyperparameter tuning across candidate alphas $[0.1, 0.5, 1.0, 2.0, 5.0]$ on 889 validation emails.
+- [x] Optimal parameter selection: $\alpha = 0.1$ achieving **0.9644 validation F1-score**, 98.85% precision, 94.14% recall.
+- [x] Pipeline serialization to `models/spam_pipeline.joblib` with SHA-256 checksum and reload prediction parity verification.
+- [x] Model interpretability extraction comparing class-conditional log probabilities (`reports/model_insights.json`).
+- [x] Complete training metadata and audit summary exported to `reports/training_summary.json`.
+- [x] Automated unit and integration test suite with 17 dedicated tests (`tests/test_train.py`).
+- [x] Entire project test suite (55 tests) passing cleanly.
 
 ### ⏳ Planned Future Phases
-- [ ] **Phase 05 (Model Training & Evaluation):** Fit TF-IDF and Multinomial Naïve Bayes pipeline on training data only; hyperparameter tuning on validation; final evaluation on test set (Accuracy, Precision, Recall, F1, Confusion Matrix); serialize artifacts (`.joblib`).
-- [ ] **Phase 06 (Inference Engine & Testing):** Standalone inference module with confidence calibration and top keyword explanation, decoupled from UI.
-- [ ] **Phase 07 (Streamlit Live Application):** Interactive web application with real-time inspection, probability visualizers, and evaluation metric dashboards.
-- [ ] **Phase 08 (Project Review & Finalization):** Final academic report documentation, end-to-end verification, and release tagging.
+- [ ] **Phase 06 (Model Evaluation & Error Analysis):** Independent evaluation on untouched 889-email test partition, confusion matrix, ROC-AUC, PR curve, calibration analysis, false positive and false negative qualitative error inspection.
+- [ ] **Phase 07 (Inference Engine & Prediction Service):** Decoupled inference service with deterministic text preprocessing, confidence scoring, explanation generation, and API boundary.
+- [ ] **Phase 08 (Interactive Streamlit Web Dashboard):** Real-time email classification interface, sample email selector, confidence gauge, token highlight visualizer, and model metrics overview.
+- [ ] **Phase 09 (Project Review & Finalization):** Final academic documentation, end-to-end integration verification, code formatting, and release packaging.
 
 ---
 
@@ -290,12 +385,17 @@ python -m src.analyze_data
 python -m src.preprocess --split
 ```
 
-### 7. Run Test Suite
+### 7. Run Model Training & Tuning Pipeline (Phase 05)
+```bash
+python -m src.train
+```
+
+### 8. Run Test Suite
 ```bash
 pytest -v
 ```
 
-### 8. Launch Streamlit Application
+### 9. Launch Streamlit Application
 ```bash
 streamlit run app.py
 ```
