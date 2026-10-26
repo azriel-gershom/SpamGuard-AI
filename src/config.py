@@ -55,6 +55,15 @@ METRICS_PATH: Path = REPORTS_DIR / "model_metrics.json"
 TRAINING_SUMMARY_FILE: Path = REPORTS_DIR / "training_summary.json"
 MODEL_INSIGHTS_FILE: Path = REPORTS_DIR / "model_insights.json"
 
+# Evaluation Artifact Paths (Phase 06)
+TEST_EVALUATION_FILE: Path = REPORTS_DIR / "test_evaluation.json"
+TEST_FINDINGS_FILE: Path = REPORTS_DIR / "evaluation_findings.md"
+TEST_CONFUSION_MATRIX_FIG: Path = FIGURES_DIR / "test_confusion_matrix.png"
+TEST_ROC_CURVE_FIG: Path = FIGURES_DIR / "test_roc_curve.png"
+TEST_PR_CURVE_FIG: Path = FIGURES_DIR / "test_precision_recall_curve.png"
+TEST_BASELINE_FIG: Path = FIGURES_DIR / "test_model_vs_baseline.png"
+TEST_METRICS_FIG: Path = FIGURES_DIR / "test_classification_metrics.png"
+
 # Phase 05 Hyperparameter Search Space
 ALPHA_CANDIDATES: list[float] = [0.1, 0.5, 1.0, 2.0, 5.0]
 
