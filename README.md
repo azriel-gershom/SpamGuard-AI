@@ -325,11 +325,73 @@ python -m src.predict --batch-csv incoming_emails.csv --output-csv classified_em
 
 ---
 
+## 🖥️ Streamlit Web Application (Phase 08)
+
+SpamGuard AI includes a full-featured, interactive cybersecurity operations dashboard built with **Streamlit** (`app.py`), backed by the verified inference engine (`src/predict.py`) and UI helper utilities (`src/ui_helpers.py`).
+
+### Launching the Dashboard
+
+```bash
+streamlit run app.py
+```
+*Default URL:* `http://localhost:8501`
+
+### Dashboard Architecture & Sections
+
+The application features persistent sidebar navigation, live cryptographic model integrity telemetry, and five dedicated operational sections:
+
+1. **System Overview & Performance:**
+   - Real-time model status badge and SHA-256 integrity indicator (`c652119...`).
+   - Official held-out test evaluation KPIs (`reports/test_evaluation.json`): **97.30% Accuracy**, **97.33% Spam Precision**, **93.75% Spam Recall**, **95.51% Spam F1-Score**, **0.9965 ROC-AUC**.
+   - Dataset partition breakdown (4,145 train, 889 validation, 889 test).
+   - High-level pipeline architecture and operational workflow.
+
+2. **Single Email Scanner:**
+   - Interactive Subject and Body text areas with real-time character counters.
+   - 4 realistic, pre-populated synthetic quick-fill templates:
+     - 🎣 *Phishing Alert:* Deceptive bank account suspension lure.
+     - 🎁 *Prize Spam:* Lottery winnings notification with urgent claim links.
+     - 💻 *Engineering Ham:* Software pull request discussion and unit test updates.
+     - 📚 *Academic Ham:* Faculty project submission deadline reminder.
+   - Dynamic verdict banner (**HAM (LEGITIMATE)** with green badge vs. **SPAM DETECTED** with red warning).
+   - Inference latency telemetry (in milliseconds).
+   - Interactive **Plotly Probability Gauge** ($0\%$ to $100\%$) with calibrated green/amber/red threat thresholds.
+   - **Explainability Breakdown:** Mathematical token contribution table displaying word-level log-odds scores:
+     $$\text{Contribution}(w) = \text{TF-IDF}(w) \times [\log P(w \mid \text{Spam}) - \log P(w \mid \text{Ham})]$$
+     categorized as *Supports SPAM* (positive log-odds) or *Supports HAM* (negative log-odds).
+   - Operational security & probabilistic classification disclaimer.
+
+3. **Batch CSV Scanner:**
+   - Drag-and-drop CSV file uploader.
+   - Built-in **Download CSV Template** button providing a standard header format (`subject,body`).
+   - Uploaded dataset preview displaying row count, columns, and data hygiene indicators.
+   - Vectorized inference processing via `SpamPredictor.predict_batch()`.
+   - Batch summary metrics: Total processed, Spam count, Ham count, and aggregate Spam Ratio.
+   - Filterable interactive results table (All, Spam Only, Ham Only).
+   - Sanitized CSV export button with automated formula injection neutralization (neutralizes `=, +, -, @` cell prefixes).
+
+4. **Model Performance Analytics:**
+   - Interactive **Plotly Confusion Matrix Heatmap** displaying normalized percentages and raw test counts (610 TN, 255 TP, 7 FP, 17 FN).
+   - Side-by-side **ROC Curve** ($\text{AUC} = 0.9965$) and **Precision-Recall Curve** ($\text{AP} = 0.9926$) from Phase 06 test evaluation.
+   - Interactive **Model vs. Majority-Class Baseline** comparative bar chart demonstrating superior discriminative power (+95.51% Spam F1 improvement).
+   - Comprehensive **Validation vs. Test Generalization Table** proving absence of overfitting.
+
+5. **About & Methodology:**
+   - Explicit Academic Course Outcome mapping:
+     - **CO2:** Text Representation & Algorithm Selection (TF-IDF + Multinomial Naïve Bayes).
+     - **CO4:** Model Engineering & Hyperparameter Optimization ($\alpha = 0.1$ Lidstone smoothing).
+     - **CO5:** Multi-Metric Performance Evaluation (Precision, Recall, F1, ROC-AUC under 2.27:1 class imbalance).
+   - End-to-end data processing and inference flowchart.
+   - Dataset provenance documentation (Apache SpamAssassin Public Corpus: 5,923 emails).
+   - Scientific acknowledgment of historical limitations (temporal drift and open-source mailing list vocabulary bias).
+
+---
+
 ## 🏗️ Repository Architecture
 
 ```text
 SpamGuard-AI/
-├── app.py                  # Streamlit web application starter
+├── app.py                  # Phase 08: Streamlit operational web dashboard
 ├── requirements.txt        # Pinned project dependencies
 ├── README.md               # Project documentation and specifications
 ├── .gitignore              # Git ignore rules for venv, cache, raw/processed data, and splits
@@ -342,7 +404,8 @@ SpamGuard-AI/
 │   ├── preprocess.py       # Phase 04: Text cleaning, stratified splitting & TF-IDF factory
 │   ├── train.py            # Phase 05: Naïve Bayes pipeline training, tuning & persistence
 │   ├── evaluate.py         # Phase 06: Final model performance evaluation pipeline
-│   └── predict.py          # Phase 07: High-reliability prediction engine & CLI
+│   ├── predict.py          # Phase 07: High-reliability prediction engine & CLI
+│   └── ui_helpers.py       # Phase 08: Streamlit UI utilities, caching, samples & charts
 ├── data/
 │   ├── raw/                # Downloaded Apache SpamAssassin tar.bz2 archives (gitignored)
 │   └── processed/          # Cleaned emails.csv dataset (gitignored)
@@ -367,7 +430,8 @@ SpamGuard-AI/
 │   ├── test_preprocess.py  # Phase 04: Unit and integration tests for preprocessing & splits
 │   ├── test_train.py       # Phase 05: Unit and integration tests for training pipeline
 │   ├── test_evaluate.py    # Phase 06: Unit and integration tests for evaluation pipeline
-│   └── test_predict.py     # Phase 07: Unit and integration tests for prediction engine
+│   ├── test_predict.py     # Phase 07: Unit and integration tests for prediction engine
+│   └── test_app.py         # Phase 08: Streamlit AppTest UI integration test suite
 └── docs/                   # Additional architecture & academic documentation
 ```
 
@@ -447,8 +511,22 @@ SpamGuard-AI/
 - [x] Comprehensive test suite with 21 dedicated unit and integration tests (`tests/test_predict.py`).
 - [x] Entire project test suite (92 tests) passing cleanly with 0 failures.
 
+### ✅ Implemented in Phase 08 (Complete Streamlit Frontend)
+- [x] Professional multi-section cybersecurity operations dashboard (`app.py`) with persistent sidebar navigation across 5 operational views.
+- [x] High-performance `@st.cache_resource` model caching with live SHA-256 cryptographic integrity verification badge (`c652119c99f0...`).
+- [x] System Overview view integrating held-out test KPIs (**97.30% Accuracy**, **97.33% Precision**, **93.75% Recall**, **95.51% F1**, **0.9965 ROC-AUC**) and pipeline workflow.
+- [x] Interactive Single Email Scanner featuring 4 realistic synthetic sample templates (Phishing, Prize Spam, Engineering Ham, Academic Ham), latency telemetry, and dynamic verdict banners.
+- [x] Real-time interactive Plotly probability threat gauge ($0\%$ to $100\%$) with calibrated green/amber/red operational zones.
+- [x] Mathematical token attribution explainability table displaying word-level log-odds contributions: $\text{TF-IDF}(w) \times [\log P(w|\text{Spam}) - \log P(w|\text{Ham})]$.
+- [x] High-throughput Batch CSV Scanner with drag-and-drop upload, template CSV generator, data preview, vectorized `predict_batch()` processing, summary metrics, and filterable results table.
+- [x] Secure sanitized batch CSV export neutralizing spreadsheet formula injection (`=, +, -, @`).
+- [x] Model Performance Analytics tab rendering interactive Plotly confusion matrix heatmap, ROC and PR curves, baseline comparison chart, and validation vs. test generalization table.
+- [x] Academic About & Methodology tab documenting course outcome mapping (CO2, CO4, CO5), architecture flowchart, Apache SpamAssassin dataset provenance, and historical limitations.
+- [x] Dedicated UI helper module (`src/ui_helpers.py`) isolating report loading, sample emails, and Plotly visualization generation.
+- [x] Comprehensive UI automated test suite with 19 dedicated unit and integration tests (`tests/test_app.py`) using `streamlit.testing.v1.AppTest`.
+- [x] Entire project test suite (111 tests) passing cleanly on Windows environment.
+
 ### ⏳ Planned Future Phases
-- [ ] **Phase 08 (Interactive Streamlit Web Dashboard):** Real-time email classification interface, sample email selector, confidence gauge, token highlight visualizer, and model metrics overview.
 - [ ] **Phase 09 (Testing and Hardening):** Comprehensive edge-case testing, error handling, interface verification, and reliability improvements.
 - [ ] **Phase 10 (Final Delivery):** Complete project documentation, demonstration materials, academic report, and presentation preparation.
 
