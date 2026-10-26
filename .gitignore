@@ -43,3 +43,9 @@ reports/figures/*
 
 # Streamlit config / cache
 .streamlit/secrets.toml
+
+# Frontend dependencies & Next.js cache
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+

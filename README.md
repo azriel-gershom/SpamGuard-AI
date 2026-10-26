@@ -627,8 +627,24 @@ python -m src.predict --batch-csv incoming.csv --output-csv results.csv
 pytest -v
 ```
 
-### 11. Launch Streamlit Application
+### 11. Launch Streamlit Application (Fallback)
 ```bash
 streamlit run app.py
 ```
 By default, the application runs on `http://localhost:8501`.
+
+### 12. Launch Anthracite Next.js Experience & FastAPI Engine
+To run the high-density editorial Anthracite interface:
+
+**Terminal 1 — FastAPI Inference Service:**
+```powershell
+.\.venv\Scripts\python -m uvicorn src.api:app --host 127.0.0.1 --port 8000
+```
+
+**Terminal 2 — Next.js 16 Web Application:**
+```powershell
+cd frontend
+npm run dev
+```
+Open **`http://localhost:3000`** in your browser. All API calls automatically route to the frozen, SHA-256 verified `SpamPredictor` inference engine.
+

@@ -215,3 +215,33 @@ flowchart LR
     Metrics --> MarkdownReport
     Metrics --> CurvePlots
 ```
+
+---
+
+## 6. Anthracite-Inspired Next.js & FastAPI Architecture (UI Refresh)
+
+```mermaid
+graph TD
+    User["Client Browser<br/>(Desktop 1920px, Laptop 1366px, Tablet 768px, Mobile 390px)"]
+    Next["Next.js 16 Web Application<br/>(Port 3000 / TypeScript + Tailwind CSS)"]
+    FastAPI["FastAPI Inference Engine<br/>(src/api.py / Port 8000)"]
+    Predictor["SpamPredictor Engine<br/>(src/predict.py)"]
+    Model["Frozen Pipeline Artifact<br/>models/spam_pipeline.joblib<br/>SHA-256: c652119c..."]
+    Reports["Verified Academic Reports<br/>reports/test_evaluation.json"]
+    Streamlit["Streamlit Dashboard<br/>(app.py / Port 8501 — Preserved Fallback)"]
+
+    User -->|HTTP / React UI| Next
+    User -->|Direct Web UI Fallback| Streamlit
+    Next -->|Proxy Rewrite /api/*| FastAPI
+    FastAPI --> Predictor
+    Streamlit --> Predictor
+    Predictor -->|Integrity Verified| Model
+    FastAPI -->|Extract Genuine KPIs| Reports
+```
+
+### Architectural Guarantees:
+1. **Decoupled Modern Presentation:** Next.js frontend is located in `frontend/`, styled with an editorial Anthracite aesthetic inspired by `anthracitestudio.be` (oversized Instrument Serif, Figtree sans-serif, JetBrains Mono telemetry, dark `#0B0B0D` backdrop).
+2. **Thin RESTful Service:** `src/api.py` exposes strictly typed Pydantic endpoints (`/api/health`, `/api/predict`, `/api/predict/batch`, `/api/predict/csv`, `/api/metrics`, `/api/samples`) backed by `SpamPredictor`.
+3. **Zero Model Modifications:** The underlying Scikit-learn Pipeline and its SHA-256 hash (`c652119c...`) remain completely frozen and verified.
+4. **Preserved Fallback:** The original Streamlit web application (`app.py`) remains 100% functional on port 8501.
+

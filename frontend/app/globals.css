@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg: #0b0b0d;
+    --bg-card: #141418;
+    --bg-elevated: #1a1a20;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.18);
+    --text-primary: #f4f3f0;
+    --text-secondary: #a3a3a8;
+    --text-muted: #66666e;
+    --accent: #b8f44a;
+    --accent-electric: #3d4bff;
+    --spam: #ff5d66;
+    --ham: #54d6a0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--bg);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: #0b0b0d;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0b0b0d;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Editorial Mark Highlight */
+mark.editorial-mark {
+  background: linear-gradient(120deg, rgba(184, 244, 74, 0.2), rgba(184, 244, 74, 0.35));
+  color: #f4f3f0;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  border-bottom: 2px solid #b8f44a;
+  display: inline-block;
+}
+
+mark.editorial-threat {
+  background: linear-gradient(120deg, rgba(255, 93, 102, 0.18), rgba(255, 93, 102, 0.3));
+  color: #f4f3f0;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  border-bottom: 2px solid #ff5d66;
+  display: inline-block;
+}
+
+/* Editorial List Hover Dimming (Anthracite Style) */
+.editorial-group:hover .editorial-row {
+  opacity: 0.32;
+  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.editorial-group .editorial-row:hover {
+  opacity: 1 !important;
+}
+
+/* Subtle Film Grain Texture Overlay */
+.bg-grain {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Animations */
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.96); }
+}
+
+.animate-pulse-subtle {
+  animation: pulseSubtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(1000%); }
+}
+
+.animate-scanline {
+  animation: scanline 8s linear infinite;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
