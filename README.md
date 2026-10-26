@@ -422,7 +422,11 @@ SpamGuard-AI/
 │   ├── model_insights.json # Phase 05: Top predictive token log probabilities
 │   ├── test_evaluation.json# Phase 06: Final test evaluation metrics & comparison
 │   ├── evaluation_findings.md # Phase 06: Comprehensive academic evaluation findings report
+│   ├── phase09_qa_report.md# Phase 09: Comprehensive QA, security & hardening audit report
+│   ├── performance_benchmark.json # Phase 09: Real hardware latency, throughput & memory metrics
 │   └── figures/            # Generated visualization charts
+├── scripts/
+│   └── profile_benchmarks.py # Phase 09: Automated performance and memory profiling script
 ├── tests/
 │   ├── test_smoke.py       # Phase 01: Project foundation smoke tests
 │   ├── test_prepare_data.py# Phase 02: Unit and integration tests for data parsing
@@ -431,7 +435,8 @@ SpamGuard-AI/
 │   ├── test_train.py       # Phase 05: Unit and integration tests for training pipeline
 │   ├── test_evaluate.py    # Phase 06: Unit and integration tests for evaluation pipeline
 │   ├── test_predict.py     # Phase 07: Unit and integration tests for prediction engine
-│   └── test_app.py         # Phase 08: Streamlit AppTest UI integration test suite
+│   ├── test_app.py         # Phase 08: Streamlit AppTest UI integration test suite
+│   └── test_hardening.py   # Phase 09: Security hardening, formula injection & edge cases
 └── docs/                   # Additional architecture & academic documentation
 ```
 
@@ -526,9 +531,19 @@ SpamGuard-AI/
 - [x] Comprehensive UI automated test suite with 19 dedicated unit and integration tests (`tests/test_app.py`) using `streamlit.testing.v1.AppTest`.
 - [x] Entire project test suite (111 tests) passing cleanly on Windows environment.
 
+### ✅ Implemented in Phase 09 (Testing, Security Hardening & Performance Verification)
+- [x] Hardened CSV formula injection defense in `src/predict.py` and `app.py` against dangerous prefixes (`=, +, -, @, \t, \r, \n`) and leading whitespace evasion patterns.
+- [x] Resolved Streamlit batch scanner state persistence defect, ensuring results table, metrics, and CSV downloads survive reactive filter changes.
+- [x] Resolved single scanner quick-fill sample state defect, resetting previous results upon new sample selection.
+- [x] Added mathematical formulas for False Positive Rate ($\text{FPR} = 1.13\%$) and False Negative Rate ($\text{FNR} = 6.25\%$) alongside dataset provenance disclosures in model analytics.
+- [x] Automated resource and latency profiling on Windows 11 host (12th Gen Intel Core i7-12650H, 16 GB RAM): cold load 76.6 ms, warm inference 1.04 ms median, 10,478 emails/sec batch throughput, and 162.4 MB peak working set.
+- [x] Exported empirical metrics to `reports/performance_benchmark.json` and authored exhaustive QA report (`reports/phase09_qa_report.md`).
+- [x] Developed 12 dedicated automated regression tests in `tests/test_hardening.py` verifying formula injection, boundary cases, Unicode/adversarial text, and model immutability.
+- [x] Verified complete automated test suite: **123 passed, 0 failed** across all 9 test suites.
+- [x] Cryptographically confirmed model integrity: SHA-256 hash `c652119c99f0db2abe0788969d002818478bb63be95e31e5f337eda8da6ddbb0` strictly unchanged.
+
 ### ⏳ Planned Future Phases
-- [ ] **Phase 09 (Testing and Hardening):** Comprehensive edge-case testing, error handling, interface verification, and reliability improvements.
-- [ ] **Phase 10 (Final Delivery):** Complete project documentation, demonstration materials, academic report, and presentation preparation.
+- [ ] **Phase 10 (Final Academic Documentation & Release Delivery):** Complete project documentation, demonstration materials, academic report, and presentation preparation.
 
 ---
 

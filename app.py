@@ -342,9 +342,14 @@ def render_email_scanner():
 
     if sample_key != "Select a pre-configured sample...":
         sample_data = SAMPLE_EMAILS[sample_key]
-        st.session_state["scanner_subject"] = sample_data["subject"]
-        st.session_state["scanner_body"] = sample_data["body"]
+        if st.session_state.get("active_sample_key") != sample_key:
+            st.session_state["active_sample_key"] = sample_key
+            st.session_state["scanner_subject"] = sample_data["subject"]
+            st.session_state["scanner_body"] = sample_data["body"]
+            st.session_state["scanner_result"] = None
         st.info(f"💡 **Sample Context:** {sample_data['description']}")
+    else:
+        st.session_state["active_sample_key"] = "Select a pre-configured sample..."
 
     # Input Form
     with st.form("single_email_form", clear_on_submit=False):
@@ -370,12 +375,21 @@ def render_email_scanner():
         st.session_state["scanner_subject"] = ""
         st.session_state["scanner_body"] = ""
         st.session_state["scanner_result"] = None
+        st.session_state["active_sample_key"] = "Select a pre-configured sample..."
         st.rerun()
 
     # Inference Execution
     if submit_scan:
+        st.session_state["scanner_subject"] = subject_input
+        st.session_state["scanner_body"] = body_input
         if not subject_input.strip() and not body_input.strip():
             st.error("⚠️ Input Validation Error: Please provide an email subject or message body to analyze.")
+            st.session_state["scanner_result"] = None
+        elif len(subject_input) + len(body_input) > MAX_INPUT_CHARS:
+            st.error(
+                f"⚠️ Input Length Error: Total input exceeds {MAX_INPUT_CHARS:,} characters. "
+                "Request blocked to prevent system exhaustion."
+            )
             st.session_state["scanner_result"] = None
         else:
             try:
@@ -531,6 +545,14 @@ def render_batch_scanner():
                 )
                 return
 
+            # Track uploaded file state to clear outdated results upon new file upload
+            file_id = f"{uploaded_file.name}_{uploaded_file.size}"
+            if st.session_state.get("batch_active_file_id") != file_id:
+                st.session_state["batch_active_file_id"] = file_id
+                st.session_state["batch_results"] = None
+                st.session_state["batch_out_df"] = None
+                st.session_state["batch_metrics"] = None
+
             # Execute Batch Scan Button
             if st.button("🚀 Scan Entire Batch", type="primary", use_container_width=True):
                 t_start = time.perf_counter()
@@ -545,19 +567,6 @@ def render_batch_scanner():
                 spam_pct = (spam_count / total_scanned) * 100.0 if total_scanned > 0 else 0.0
                 ham_pct = (ham_count / total_scanned) * 100.0 if total_scanned > 0 else 0.0
 
-                st.markdown("---")
-                st.markdown("### 📊 Batch Classification Summary")
-
-                b1, b2, b3, b4 = st.columns(4)
-                with b1:
-                    st.metric("Total Emails Scanned", f"{total_scanned:,}")
-                with b2:
-                    st.metric("Spam Detected", f"{spam_count:,}", f"{spam_pct:.1f}% of batch")
-                with b3:
-                    st.metric("Legitimate (Ham)", f"{ham_count:,}", f"{ham_pct:.1f}% of batch")
-                with b4:
-                    st.metric("Total Execution Time", f"{t_total_ms:.1f} ms", f"{t_total_ms/total_scanned:.2f} ms/email")
-
                 # Build Clean Output DataFrame (Formula Injection Protected)
                 out_rows = []
                 for idx, r in enumerate(results):
@@ -570,6 +579,39 @@ def render_batch_scanner():
                         "Latency (ms)": round(r.processing_time_ms, 2),
                     })
                 df_out = pd.DataFrame(out_rows)
+
+                st.session_state["batch_results"] = results
+                st.session_state["batch_out_df"] = df_out
+                st.session_state["batch_metrics"] = {
+                    "total": total_scanned,
+                    "spam": spam_count,
+                    "ham": ham_count,
+                    "spam_pct": spam_pct,
+                    "ham_pct": ham_pct,
+                    "time_ms": t_total_ms,
+                }
+
+            # Render Results if available in session state
+            if st.session_state.get("batch_out_df") is not None:
+                m_data = st.session_state["batch_metrics"]
+                df_out = st.session_state["batch_out_df"]
+
+                st.markdown("---")
+                st.markdown("### 📊 Batch Classification Summary")
+
+                b1, b2, b3, b4 = st.columns(4)
+                with b1:
+                    st.metric("Total Emails Scanned", f"{m_data['total']:,}")
+                with b2:
+                    st.metric("Spam Detected", f"{m_data['spam']:,}", f"{m_data['spam_pct']:.1f}% of batch")
+                with b3:
+                    st.metric("Legitimate (Ham)", f"{m_data['ham']:,}", f"{m_data['ham_pct']:.1f}% of batch")
+                with b4:
+                    st.metric(
+                        "Total Execution Time",
+                        f"{m_data['time_ms']:.1f} ms",
+                        f"{m_data['time_ms']/m_data['total']:.2f} ms/email" if m_data['total'] > 0 else "0 ms",
+                    )
 
                 # Results Table with Filter
                 st.markdown("#### Detailed Scan Results")
@@ -660,13 +702,17 @@ def render_model_analytics():
         with col_cm_text:
             st.markdown(
                 f"""
-                #### Matrix Interpretation:
+                #### Matrix Interpretation & Operational Rates:
                 - **True Negatives (`TN = {cm.get('tn', 610)}`):** 98.87% of legitimate emails were correctly allowed into the inbox.
                 - **True Positives (`TP = {cm.get('tp', 255)}`):** 93.75% of malicious/promotional spam messages were caught.
-                - **False Positives (`FP = {cm.get('fp', 7)}`):** Only 7 legitimate emails (1.13% Type I error) were misidentified as spam.
-                - **False Negatives (`FN = {cm.get('fn', 17)}`):** Only 17 spam messages (6.25% Type II error) bypassed detection.
+                - **False Positives (`FP = {cm.get('fp', 7)}`):** Only 7 legitimate emails were misidentified as spam.
+                  - *False Positive Rate (Type I error):* $\\text{{FPR}} = \\frac{{\\text{{FP}}}}{{\\text{{FP}} + \\text{{TN}}}} = \\frac{{7}}{{7 + 610}} = \\mathbf{{1.13\\%}}$.
+                - **False Negatives (`FN = {cm.get('fn', 17)}`):** Only 17 spam messages bypassed detection.
+                  - *False Negative Rate (Type II error):* $\\text{{FNR}} = \\frac{{\\text{{FN}}}}{{\\text{{FN}} + \\text{{TP}}}} = \\frac{{17}}{{17 + 255}} = \\mathbf{{6.25\\%}}$.
                 
-                *In email cybersecurity, keeping False Positives minimal is vital to ensure important communications are not lost.*
+                *In email cybersecurity, keeping False Positives minimal is vital to ensure mission-critical business communications are not quarantined.*
+
+                > **Notice:** These metrics represent empirical held-out test evaluation on the historical Apache SpamAssassin corpus ($n = 889$ emails, 2002–2005) and serve as a reproducible baseline. They do not constitute an infallible operational guarantee against modern adversarial evasion or zero-day phishing campaigns.
                 """
             )
 

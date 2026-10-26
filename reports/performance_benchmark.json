@@ -1,0 +1,68 @@
+{
+  "benchmark_metadata": {
+    "timestamp_utc": "2026-10-26 10:00:57Z",
+    "hardware": {
+      "cpu": "12th Gen Intel Core i7-12650H (10 Cores, 16 Threads)",
+      "ram_total_gb": 16.0,
+      "os": "Windows-11-10.0.26300-SP0",
+      "python_version": "3.12.10"
+    },
+    "model_identifier": "MultinomialNB(alpha=0.1) + TF-IDF(20,000 features)",
+    "pipeline_sha256": "c652119c99f0db2abe0788969d002818478bb63be95e31e5f337eda8da6ddbb0"
+  },
+  "cold_model_load": {
+    "load_time_ms": 76.62,
+    "memory_before_load_mb": 150.5,
+    "memory_after_load_mb": 159.66,
+    "memory_delta_mb": 9.16
+  },
+  "single_email_latency_ms": {
+    "iterations": 100,
+    "median_p50": 1.04,
+    "percentile_p95": 2.14,
+    "mean": 1.219,
+    "min": 0.966,
+    "max": 2.609
+  },
+  "single_email_with_explainability_ms": {
+    "iterations": 30,
+    "median_p50": 1.592,
+    "percentile_p95": 3.193,
+    "explainability_overhead_ms": 0.552
+  },
+  "batch_classification": {
+    "small_batch_50": {
+      "total_median_ms": 5.46,
+      "total_p95_ms": 6.7,
+      "latency_per_email_ms": 0.109,
+      "throughput_emails_per_sec": 9151.7
+    },
+    "medium_batch_500": {
+      "total_median_ms": 47.85,
+      "total_p95_ms": 55.41,
+      "latency_per_email_ms": 0.096,
+      "throughput_emails_per_sec": 10449.2
+    },
+    "large_batch_1000": {
+      "total_median_ms": 95.43,
+      "total_p95_ms": 98.43,
+      "latency_per_email_ms": 0.095,
+      "throughput_emails_per_sec": 10478.5
+    }
+  },
+  "memory_profile_mb": {
+    "baseline_working_set_mb": 150.5,
+    "post_model_load_mb": 159.66,
+    "peak_working_set_during_1000_batch_mb": 162.44,
+    "steady_state_working_set_mb": 161.91
+  },
+  "prediction_reproducibility": {
+    "tested_iterations": 50,
+    "bit_for_bit_identical": true
+  },
+  "benchmark_limitations": [
+    "Measurements were conducted on an MSI Windows 11 development laptop with background OS processes active.",
+    "Results reflect vectorized CPU inference on Scikit-learn Pipeline; performance in containerized or resource-constrained serverless environments may vary.",
+    "Local benchmarks must not be interpreted as contractual production service-level guarantees (SLAs)."
+  ]
+}

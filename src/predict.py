@@ -178,9 +178,17 @@ def combine_subject_and_body(subject: Any, body: Any) -> str:
 
 
 def sanitize_csv_cell(value: Any) -> Any:
-    """Prevents CSV formula injection by escaping leading control characters."""
+    """Prevents CSV formula injection by escaping leading control characters and prefixes.
+
+    Neutralizes '=', '+', '-', '@', '\t', '\r', '\n' and leading whitespace before dangerous prefixes.
+    """
     if isinstance(value, str):
-        if value and value[0] in ("=", "+", "-", "@", "\t", "\r"):
+        if not value:
+            return value
+        stripped = value.lstrip(" \t\r\n")
+        if stripped and stripped[0] in ("=", "+", "-", "@"):
+            return f"'{value}"
+        if value[0] in ("=", "+", "-", "@", "\t", "\r", "\n"):
             return f"'{value}"
     return value
 
