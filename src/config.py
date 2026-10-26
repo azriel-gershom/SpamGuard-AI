@@ -71,6 +71,12 @@ ALPHA_CANDIDATES: list[float] = [0.1, 0.5, 1.0, 2.0, 5.0]
 RANDOM_STATE: int = 42
 TEST_SIZE: float = 0.2
 
+# Phase 07 Prediction Engine Configurations
+EXPECTED_PIPELINE_SHA256: str = "c652119c99f0db2abe0788969d002818478bb63be95e31e5f337eda8da6ddbb0"
+MAX_INPUT_CHARS: int = 1_000_000  # 1 MB max input text safety limit
+MAX_BATCH_SIZE: int = 10_000      # Maximum batch size for inference
+DEFAULT_TOP_K_EXPLANATIONS: int = 5
+
 # Application Metadata
 APP_TITLE: str = "SpamGuard AI"
 APP_SUBTITLE: str = "AI-Powered Email Spam Classification"

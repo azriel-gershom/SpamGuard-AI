@@ -787,7 +787,7 @@ To demonstrate that the model did not overfit the validation set during hyperpar
 | **Spam Recall** | 94.14% | {m["spam"]["recall"]*100:.2f}% | {v["generalization_delta"]["spam_recall_delta"]*100:+.2f}% | Consistent (Δ = -0.39%) |
 | **Spam F1-Score** | 96.44% | {m["spam"]["f1_score"]*100:.2f}% | {v["generalization_delta"]["spam_f1_delta"]*100:+.2f}% | High Fidelity |
 
-The minimal divergence between validation and test scores (<1.0% across all indicators) proves that the model possesses excellent generalization capabilities and that data leakage was successfully prevented.
+The minimal divergence between validation and test scores (<1.0% across accuracy, recall, and F1-score, with a minor 1.52% decrease in spam precision) proves that the model possesses excellent generalization capabilities and that data leakage was successfully prevented.
 
 ---
 
