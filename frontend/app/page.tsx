@@ -5,6 +5,7 @@ import ProblemSection from "@/components/ProblemSection";
 import PipelineSection from "@/components/PipelineSection";
 import EmailScanner from "@/components/EmailScanner";
 import BatchScanner from "@/components/BatchScanner";
+import ThreatInvestigationExplorer from "@/components/ThreatInvestigationExplorer";
 import ModelAnalytics from "@/components/ModelAnalytics";
 import Methodology from "@/components/Methodology";
 import Footer from "@/components/Footer";
@@ -18,6 +19,7 @@ export default function Home() {
       <PipelineSection />
       <EmailScanner />
       <BatchScanner />
+      <ThreatInvestigationExplorer />
       <ModelAnalytics />
       <Methodology />
       <Footer />

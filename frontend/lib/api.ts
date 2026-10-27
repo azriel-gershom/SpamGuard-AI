@@ -212,3 +212,89 @@ export async function fetchSamples(): Promise<{ samples: SyntheticSample[] }> {
   }
   return res.json();
 }
+
+// =====================================================================
+// Threat Investigation Explorer (Greedy Best-First Search) Types & SDK
+// =====================================================================
+
+export interface InvestigationEmailItem {
+  id: string;
+  subject: string;
+  body: string;
+}
+
+export interface SearchNodeModel {
+  node_id: string;
+  node_type: "email" | "indicator";
+  display_label: string;
+  heuristic: number;
+  explanation: string;
+  step_order?: number;
+}
+
+export interface GraphNodeVis {
+  id: string;
+  label: string;
+  type: "email" | "indicator";
+  indicator_type?: "domain" | "url" | "email";
+  preview?: string;
+  is_path: boolean;
+  is_explored: boolean;
+  heuristic?: number;
+}
+
+export interface GraphEdgeVis {
+  source: string;
+  target: string;
+  is_path: boolean;
+}
+
+export interface SearchResponse {
+  found: boolean;
+  start_email_id: string;
+  goal_email_id: string;
+  path: SearchNodeModel[];
+  explored: SearchNodeModel[];
+  heuristic_values: Record<string, number>;
+  graph_summary: {
+    total_nodes: number;
+    total_edges: number;
+    email_count: number;
+    indicator_count: number;
+  };
+  search_metrics: {
+    nodes_explored: number;
+    path_length: number;
+    max_frontier_size: number;
+  };
+  message: string;
+  graph_visualization: {
+    nodes: GraphNodeVis[];
+    edges: GraphEdgeVis[];
+  };
+}
+
+export async function fetchSearchDemoEmails(): Promise<{ emails: InvestigationEmailItem[] }> {
+  const res = await fetch(`${API_BASE}/api/search/demo-emails`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Demo emails error: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function runGreedyBestFirstSearch(
+  emails: InvestigationEmailItem[],
+  start_email_id: string,
+  goal_email_id: string
+): Promise<SearchResponse> {
+  const res = await fetch(`${API_BASE}/api/search/best-first`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ emails, start_email_id, goal_email_id }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: "Search failed" }));
+    throw new Error(err.detail || `Search error: ${res.status}`);
+  }
+  return res.json();
+}

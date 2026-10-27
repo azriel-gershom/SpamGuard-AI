@@ -376,9 +376,19 @@ The application features persistent sidebar navigation, live cryptographic model
    - Interactive **Model vs. Majority-Class Baseline** comparative bar chart demonstrating superior discriminative power (+95.51% Spam F1 improvement).
    - Comprehensive **Validation vs. Test Generalization Table** proving absence of overfitting.
 
-5. **About & Methodology:**
+5. **Threat Investigation Explorer (Greedy Best-First Search — CO2 Alignment):**
+   - **Bipartite Email-Indicator Graph:** Represents email documents and extracted digital artifacts (URLs, domains, and email addresses) as an undirected bipartite graph.
+   - **Informed Search Algorithm:** Implements pure **Greedy Best-First Search** ($\text{Priority}(n) = h(n)$ via `heapq`), strictly distinguishing itself from $A^*$ by focusing solely on heuristic proximity to the goal.
+   - **Documented Structural Heuristic:** Evaluates Jaccard set dissimilarity to the target email:
+     $$h(n) = 1 - \frac{|I(n) \cap I(\text{goal})|}{|I(n) \cup I(\text{goal})|}$$
+     with $h(\text{goal}) = 0.0$ and $h(i) = 0.0$ for indicators directly present in the goal.
+   - **Interactive Graph Visualization:** Custom SVG canvas rendering email nodes, indicator nodes, and highlighting the discovered investigation path.
+   - **Exploration Trace:** Tabular view of every popped node, step order, heuristic value, and Jaccard rationale.
+   - **Academic Distinction:** Graph traversal reveals connected infrastructure; the frozen Naïve Bayes classifier handles probabilistic Spam/Ham classification.
+
+6. **About & Methodology:**
    - Explicit Academic Course Outcome mapping:
-     - **CO2:** Text Representation & Algorithm Selection (TF-IDF + Multinomial Naïve Bayes).
+     - **CO2:** Informed Search Techniques & Algorithm Engineering (Greedy Best-First Search on email-indicator graphs, alongside TF-IDF and Naive Bayes).
      - **CO4:** Model Engineering & Hyperparameter Optimization ($\alpha = 0.1$ Lidstone smoothing).
      - **CO5:** Multi-Metric Performance Evaluation (Precision, Recall, F1, ROC-AUC under 2.27:1 class imbalance).
    - End-to-end data processing and inference flowchart.
@@ -391,7 +401,7 @@ The application features persistent sidebar navigation, live cryptographic model
 
 ```text
 SpamGuard-AI/
-├── app.py                  # Phase 08: Streamlit operational web dashboard
+├── app.py                  # Streamlit operational web dashboard (includes Investigation Explorer)
 ├── requirements.txt        # Pinned project dependencies
 ├── README.md               # Project documentation and specifications
 ├── .gitignore              # Git ignore rules for venv, cache, raw/processed data, and splits
@@ -399,45 +409,58 @@ SpamGuard-AI/
 ├── src/
 │   ├── __init__.py         # Core package definition
 │   ├── config.py           # Path constants and pipeline configurations
-│   ├── prepare_data.py     # Phase 02: Safe email download, parsing, and export
-│   ├── analyze_data.py     # Phase 03: Exploratory data analysis & visualization engine
-│   ├── preprocess.py       # Phase 04: Text cleaning, stratified splitting & TF-IDF factory
-│   ├── train.py            # Phase 05: Naïve Bayes pipeline training, tuning & persistence
-│   ├── evaluate.py         # Phase 06: Final model performance evaluation pipeline
-│   ├── predict.py          # Phase 07: High-reliability prediction engine & CLI
-│   └── ui_helpers.py       # Phase 08: Streamlit UI utilities, caching, samples & charts
+│   ├── prepare_data.py     # Safe email download, parsing, and export
+│   ├── analyze_data.py     # Exploratory data analysis & visualization engine
+│   ├── preprocess.py       # Text cleaning, stratified splitting & TF-IDF factory
+│   ├── train.py            # Naïve Bayes pipeline training, tuning & persistence
+│   ├── evaluate.py         # Model performance evaluation pipeline
+│   ├── predict.py          # High-reliability prediction engine & CLI
+│   ├── best_first_search.py# Learning Unit II: Greedy Best-First Search & graph engine
+│   ├── api.py              # FastAPI inference service & investigation search endpoints
+│   └── ui_helpers.py       # Streamlit UI utilities, caching, samples & charts
+├── frontend/               # Anthracite Next.js 16 + TypeScript web application
+│   ├── components/
+│   │   ├── ThreatInvestigationExplorer.tsx # Interactive graph traversal UI
+│   │   ├── EmailScanner.tsx
+│   │   ├── BatchScanner.tsx
+│   │   ├── ModelAnalytics.tsx
+│   │   └── Navbar.tsx
+│   └── lib/
+│       └── api.ts          # Typed REST client with search endpoints
 ├── data/
 │   ├── raw/                # Downloaded Apache SpamAssassin tar.bz2 archives (gitignored)
 │   └── processed/          # Cleaned emails.csv dataset (gitignored)
-│       └── splits/         # Phase 04: train.csv, validation.csv, test.csv (gitignored)
+│       └── splits/         # train.csv, validation.csv, test.csv (gitignored)
 ├── models/
 │   ├── .gitkeep
-│   └── spam_pipeline.joblib# Phase 05: Serialized fitted pipeline (gitignored)
+│   └── spam_pipeline.joblib# Serialized fitted pipeline (gitignored)
 ├── reports/
-│   ├── data_summary.json   # Phase 02: Dataset ingestion statistics & SHA-256 hashes
-│   ├── eda_summary.json    # Phase 03: Quantitative EDA summary metrics
-│   ├── eda_findings.md     # Phase 03: Comprehensive academic findings report
-│   ├── split_summary.json  # Phase 04: Partition statistics & leakage audit report
-│   ├── training_summary.json # Phase 05: Training metadata, baseline & validation metrics
-│   ├── model_insights.json # Phase 05: Top predictive token log probabilities
-│   ├── test_evaluation.json# Phase 06: Final test evaluation metrics & comparison
-│   ├── evaluation_findings.md # Phase 06: Comprehensive academic evaluation findings report
-│   ├── phase09_qa_report.md# Phase 09: Comprehensive QA, security & hardening audit report
-│   ├── performance_benchmark.json # Phase 09: Real hardware latency, throughput & memory metrics
-│   ├── final_release_checklist.md # Phase 10: Release readiness certification & dataset audit
+│   ├── data_summary.json   # Dataset ingestion statistics & SHA-256 hashes
+│   ├── eda_summary.json    # Quantitative EDA summary metrics
+│   ├── eda_findings.md     # Comprehensive academic findings report
+│   ├── split_summary.json  # Partition statistics & leakage audit report
+│   ├── training_summary.json # Training metadata, baseline & validation metrics
+│   ├── model_insights.json # Top predictive token log probabilities
+│   ├── test_evaluation.json# Final test evaluation metrics & comparison
+│   ├── evaluation_findings.md # Comprehensive academic evaluation findings report
+│   ├── phase09_qa_report.md# Comprehensive QA, security & hardening audit report
+│   ├── performance_benchmark.json # Real hardware latency, throughput & memory metrics
+│   ├── final_release_checklist.md # Release readiness certification & dataset audit
 │   └── figures/            # Generated visualization charts
 ├── scripts/
-│   └── profile_benchmarks.py # Phase 09: Automated performance and memory profiling script
+│   └── profile_benchmarks.py # Automated performance and memory profiling script
 ├── tests/
-│   ├── test_smoke.py       # Phase 01: Project foundation smoke tests
-│   ├── test_prepare_data.py# Phase 02: Unit and integration tests for data parsing
-│   ├── test_eda.py         # Phase 03: Unit and integration tests for EDA module
-│   ├── test_preprocess.py  # Phase 04: Unit and integration tests for preprocessing & splits
-│   ├── test_train.py       # Phase 05: Unit and integration tests for training pipeline
-│   ├── test_evaluate.py    # Phase 06: Unit and integration tests for evaluation pipeline
-│   ├── test_predict.py     # Phase 07: Unit and integration tests for prediction engine
-│   ├── test_app.py         # Phase 08: Streamlit AppTest UI integration test suite
-│   └── test_hardening.py   # Phase 09: Security hardening, formula injection & edge cases
+│   ├── test_smoke.py       # Project foundation smoke tests
+│   ├── test_prepare_data.py# Unit and integration tests for data parsing
+│   ├── test_eda.py         # Unit and integration tests for EDA module
+│   ├── test_preprocess.py  # Unit and integration tests for preprocessing & splits
+│   ├── test_train.py       # Unit and integration tests for training pipeline
+│   ├── test_evaluate.py    # Unit and integration tests for evaluation pipeline
+│   ├── test_predict.py     # Unit and integration tests for prediction engine
+│   ├── test_best_first_search.py # 17 tests: Graph construction, heuristic & Greedy BFS
+│   ├── test_api.py         # FastAPI integration tests
+│   ├── test_app.py         # Streamlit AppTest UI integration test suite
+│   └── test_hardening.py   # Security hardening, formula injection & edge cases
 └── docs/
     ├── SpamGuard_AI_Final_Project_Report.md  # Phase 10: Complete 29-section academic final project report
     ├── architecture.md                        # Phase 10: 5 verified Mermaid system and workflow diagrams
@@ -642,9 +665,30 @@ To run the high-density editorial Anthracite interface:
 ```
 
 **Terminal 2 — Next.js 16 Web Application:**
-```powershell
+```bash
 cd frontend
 npm run dev
 ```
 Open **`http://localhost:3000`** in your browser. All API calls automatically route to the frozen, SHA-256 verified `SpamPredictor` inference engine.
+
+### 13. Threat Investigation Explorer (Greedy Best-First Search — CO2)
+To invoke the informed graph-based investigation traversal via API:
+```bash
+# Fetch synthetic demo corpus:
+curl -s http://127.0.0.1:8000/api/search/demo-emails
+
+# Execute Greedy Best-First Search traversal:
+curl -X POST http://127.0.0.1:8000/api/search/best-first \
+  -H "Content-Type: application/json" \
+  -d '{
+    "emails": [
+      {"id": "Email-1", "subject": "Urgent Alert", "body": "Verify at https://auth.example.com"},
+      {"id": "Email-2", "subject": "Notice", "body": "See https://auth.example.com and https://portal.example.org"},
+      {"id": "Email-3", "subject": "Target", "body": "Visit https://portal.example.org"}
+    ],
+    "start_email_id": "Email-1",
+    "goal_email_id": "Email-3"
+  }'
+```
+Or interactively explore paths on **`http://localhost:3000/#investigation`** or in Streamlit at **`http://localhost:8501`**.
 

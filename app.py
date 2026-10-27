@@ -23,6 +23,12 @@ if str(PROJECT_ROOT) not in sys.path:
 import pandas as pd
 import streamlit as st
 
+from src.best_first_search import (
+    EmailRecord,
+    build_email_indicator_graph,
+    get_demo_investigation_emails,
+    greedy_best_first_search,
+)
 from src.config import (
     APP_SUBTITLE,
     APP_TITLE,
@@ -224,6 +230,7 @@ def render_sidebar() -> str:
                 "🏠 Overview Dashboard",
                 "🔍 Email Scanner",
                 "📁 Batch CSV Scanner",
+                "🧭 Investigation Explorer",
                 "📊 Model Analytics",
                 "ℹ️ About & Methodology",
             ],
@@ -645,6 +652,135 @@ def render_batch_scanner():
 
 
 # =====================================================================
+# 5. View: Threat Investigation Explorer (Greedy Best-First Search)
+# =====================================================================
+
+def render_investigation_explorer():
+    """Renders the Greedy Best-First Search email-indicator investigation module."""
+    st.markdown('<span class="header-badge">● Informed Search Traversal (CO2 Alignment)</span>', unsafe_allow_html=True)
+    st.title("🧭 Threat Investigation Explorer")
+    st.markdown(
+        "Explore structural connections between suspicious emails across an **undirected bipartite graph** "
+        "linking messages to digital indicators (URLs, hostnames, email addresses). Traversal is executed using "
+        "**Greedy Best-First Search** prioritizing states by Jaccard structural dissimilarity: "
+        "`Priority(n) = h(n) = 1 - J(I(n), I(goal))`."
+    )
+
+    if "investigation_emails" not in st.session_state:
+        st.session_state["investigation_emails"] = get_demo_investigation_emails()
+
+    col_actions1, col_actions2, col_actions3 = st.columns([1.2, 1.2, 2.0])
+    with col_actions1:
+        if st.button("🔄 Reset to Demo Corpus"):
+            st.session_state["investigation_emails"] = get_demo_investigation_emails()
+            st.rerun()
+
+    with col_actions2:
+        csv_file = st.file_uploader("Upload CSV", type=["csv"], label_visibility="collapsed")
+        if csv_file is not None:
+            try:
+                df = pd.read_csv(csv_file)
+                body_col = None
+                for c in ["body", "text", "content", "message"]:
+                    if c in df.columns:
+                        body_col = c
+                        break
+                if body_col:
+                    parsed = []
+                    for idx, row in df.head(20).iterrows():
+                        em_id = str(row.get("id", f"Email-{idx+1}"))
+                        em_subj = str(row.get("subject", f"Message {idx+1}"))
+                        em_body = str(row[body_col])
+                        parsed.append({"id": em_id, "subject": em_subj, "body": em_body})
+                    if len(parsed) >= 2:
+                        st.session_state["investigation_emails"] = parsed
+                        st.success(f"Loaded {len(parsed)} emails from CSV.")
+                        st.rerun()
+            except Exception as e:
+                st.error(f"Failed to parse CSV: {e}")
+
+    emails_data = st.session_state["investigation_emails"]
+
+    st.markdown("---")
+    st.markdown("### 1. Investigation Email Corpus")
+
+    with st.expander(f"📋 View & Manage Emails ({len(emails_data)} Messages)", expanded=False):
+        for idx, em in enumerate(emails_data):
+            st.markdown(f"**{em['id']}**: *{em.get('subject', 'No Subject')}*")
+            st.caption(em.get("body", "")[:180] + "...")
+
+    # Traversal Selector
+    st.markdown("### 2. Configure Traversal Goal")
+    email_ids = [e["id"] for e in emails_data]
+
+    col_sel1, col_sel2 = st.columns(2)
+    with col_sel1:
+        start_id = st.selectbox(
+            "Select Starting Email (Root Node)",
+            options=email_ids,
+            index=0,
+            key="bfs_start_select",
+        )
+    with col_sel2:
+        goal_id = st.selectbox(
+            "Select Target Email (Goal Node)",
+            options=email_ids,
+            index=min(3, len(email_ids) - 1),
+            key="bfs_goal_select",
+        )
+
+    if st.button("🚀 Run Greedy Best-First Search", type="primary", use_container_width=True):
+        records = [EmailRecord(id=e["id"], subject=e.get("subject", ""), body=e.get("body", "")) for e in emails_data]
+        graph = build_email_indicator_graph(records)
+        res = greedy_best_first_search(graph, start_id, goal_id)
+
+        st.markdown("---")
+        st.markdown("### 3. Investigation Traversal Results")
+
+        if res.found:
+            st.success(f"🎯 **Target Reached!** Connecting path discovered: **{res.search_metrics['path_length']} hops**.")
+        else:
+            st.warning(f"⚠️ **Target Unreachable:** {res.message}")
+
+        # Metrics Row
+        m1, m2, m3, m4, m5 = st.columns(5)
+        m1.metric("Path Status", "Found" if res.found else "No Path")
+        m2.metric("Path Length", f"{res.search_metrics['path_length']} hops")
+        m3.metric("Explored Nodes", f"{res.search_metrics['nodes_explored']}")
+        m4.metric("Graph Nodes", f"{res.graph_summary['total_nodes']}")
+        m5.metric("Max Frontier", f"{res.search_metrics['max_frontier_size']}")
+
+        if res.found and res.path:
+            st.markdown("#### 🔗 Discovered Investigation Path")
+            path_display = []
+            for p in res.path:
+                icon = "📧" if p.node_type == "email" else "🌐"
+                path_display.append(f"`{icon} {p.display_label} (h={p.heuristic})`")
+            st.markdown(" ➔ ".join(path_display))
+
+        # Exploration Trace
+        with st.expander("📊 View Detailed Exploration Trace Table", expanded=True):
+            trace_rows = []
+            for step in res.explored:
+                trace_rows.append({
+                    "Order": f"#{step.step_order}",
+                    "Type": step.node_type.upper(),
+                    "Node Label": step.display_label,
+                    "Heuristic h(n)": step.heuristic,
+                    "Evaluation Rationale": step.explanation,
+                })
+            st.dataframe(pd.DataFrame(trace_rows), use_container_width=True)
+
+        st.markdown(
+            """
+            > **Academic Note (CO2 - Search Techniques):**  
+            > Greedy Best-First Search evaluates priority purely via the heuristic `Priority(n) = h(n)`, unlike A* which incorporates cumulative path cost `g(n)`.
+            > The graph path demonstrates connected digital infrastructure; our Naïve Bayes model continues to perform statistical Spam/Ham classification.
+            """
+        )
+
+
+# =====================================================================
 # 6. View: Model Performance Analytics
 # =====================================================================
 
@@ -833,6 +969,8 @@ def main():
         render_email_scanner()
     elif selected_tab == "📁 Batch CSV Scanner":
         render_batch_scanner()
+    elif selected_tab == "🧭 Investigation Explorer":
+        render_investigation_explorer()
     elif selected_tab == "📊 Model Analytics":
         render_model_analytics()
     elif selected_tab == "ℹ️ About & Methodology":

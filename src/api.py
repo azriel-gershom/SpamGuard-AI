@@ -13,7 +13,7 @@ import platform
 import sys
 import time
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile, status
@@ -25,6 +25,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.best_first_search import (
+    EmailRecord,
+    build_email_indicator_graph,
+    get_demo_investigation_emails,
+    greedy_best_first_search,
+)
 from src.config import (
     DEFAULT_TOP_K_EXPLANATIONS,
     EXPECTED_PIPELINE_SHA256,
@@ -121,6 +127,66 @@ class HealthResponse(BaseModel):
     model_sha256_verified: bool
     model_identifier: str
     system_info: dict[str, str]
+
+
+# =====================================================================
+# Threat Investigation Explorer (Greedy Best-First Search) Schemas
+# =====================================================================
+
+class InvestigationEmailItem(BaseModel):
+    id: str = Field(..., min_length=1, max_length=100)
+    subject: str = Field(default="", max_length=10000)
+    body: str = Field(default="", max_length=MAX_INPUT_CHARS)
+
+
+class SearchRequest(BaseModel):
+    emails: List[InvestigationEmailItem]
+    start_email_id: str = Field(..., min_length=1, max_length=100)
+    goal_email_id: str = Field(..., min_length=1, max_length=100)
+
+
+class SearchNodeModel(BaseModel):
+    node_id: str
+    node_type: str
+    display_label: str
+    heuristic: float
+    explanation: str
+    step_order: Optional[int] = None
+
+
+class GraphNodeVis(BaseModel):
+    id: str
+    label: str
+    type: str  # "email" | "indicator"
+    indicator_type: Optional[str] = None
+    preview: Optional[str] = None
+    is_path: bool = False
+    is_explored: bool = False
+    heuristic: Optional[float] = None
+
+
+class GraphEdgeVis(BaseModel):
+    source: str
+    target: str
+    is_path: bool = False
+
+
+class GraphVisData(BaseModel):
+    nodes: List[GraphNodeVis]
+    edges: List[GraphEdgeVis]
+
+
+class SearchResponse(BaseModel):
+    found: bool
+    start_email_id: str
+    goal_email_id: str
+    path: List[SearchNodeModel]
+    explored: List[SearchNodeModel]
+    heuristic_values: Dict[str, float]
+    graph_summary: Dict[str, int]
+    search_metrics: Dict[str, Any]
+    message: str
+    graph_visualization: GraphVisData
 
 
 # =====================================================================
@@ -462,8 +528,8 @@ def get_evaluation_metrics() -> dict[str, Any]:
             "competencies": [
                 {
                     "code": "CO2",
-                    "title": "Algorithm Selection",
-                    "description": "Multinomial Naïve Bayes probabilistic model tailored for discrete TF-IDF text features.",
+                    "title": "Informed Search & Algorithm Engineering",
+                    "description": "Greedy Best-First Search on email-indicator bipartite graphs with Jaccard structural heuristics, alongside TF-IDF and Naive Bayes.",
                 },
                 {
                     "code": "CO4",
@@ -519,6 +585,144 @@ def get_samples() -> dict[str, Any]:
             "description": s.get("description"),
         })
     return {"samples": formatted}
+
+
+# =====================================================================
+# Threat Investigation Explorer (Greedy Best-First Search) Endpoints
+# =====================================================================
+
+@app.get("/api/search/demo-emails")
+def get_search_demo_emails() -> dict[str, Any]:
+    """Returns synthetic demonstration emails for Threat Investigation Explorer."""
+    return {"emails": get_demo_investigation_emails()}
+
+
+@app.post("/api/search/best-first", response_model=SearchResponse)
+def search_best_first(payload: SearchRequest) -> SearchResponse:
+    """Executes Greedy Best-First Search on the email-indicator bipartite graph."""
+    if not payload.emails:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The email collection must contain at least one email record.",
+        )
+
+    if len(payload.emails) > 100:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Maximum allowed investigation emails is 100 (received {len(payload.emails)}).",
+        )
+
+    # Check ID uniqueness
+    email_ids = [e.id.strip() for e in payload.emails]
+    if len(email_ids) != len(set(email_ids)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Duplicate email identifier detected. All email IDs must be unique.",
+        )
+
+    start_clean = payload.start_email_id.strip()
+    goal_clean = payload.goal_email_id.strip()
+
+    if start_clean not in set(email_ids):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Start email ID '{start_clean}' does not match any provided email records.",
+        )
+
+    if goal_clean not in set(email_ids):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Target email ID '{goal_clean}' does not match any provided email records.",
+        )
+
+    # Build EmailRecords and graph
+    records = [
+        EmailRecord(id=e.id.strip(), subject=e.subject or "", body=e.body or "")
+        for e in payload.emails
+    ]
+    graph = build_email_indicator_graph(records)
+
+    # Execute Greedy Best-First Search
+    res = greedy_best_first_search(graph, start_clean, goal_clean)
+
+    # Convert path and explored nodes to SearchNodeModel
+    path_models = [
+        SearchNodeModel(
+            node_id=p.node_id,
+            node_type=p.node_type,
+            display_label=p.display_label,
+            heuristic=p.heuristic,
+            explanation=p.explanation,
+            step_order=p.step_order,
+        )
+        for p in res.path
+    ]
+
+    explored_models = [
+        SearchNodeModel(
+            node_id=e.node_id,
+            node_type=e.node_type,
+            display_label=e.display_label,
+            heuristic=e.heuristic,
+            explanation=e.explanation,
+            step_order=e.step_order,
+        )
+        for e in res.explored
+    ]
+
+    # Prepare graph visualization payload
+    path_node_ids = {p.node_id for p in res.path}
+    explored_node_ids = {e.node_id for e in res.explored}
+
+    path_edge_set: set[tuple[str, str]] = set()
+    if len(res.path) > 1:
+        for idx in range(len(res.path) - 1):
+            u, v = res.path[idx].node_id, res.path[idx + 1].node_id
+            path_edge_set.add((min(u, v), max(u, v)))
+
+    vis_nodes: List[GraphNodeVis] = []
+    for nid, node in graph.nodes.items():
+        h_val = res.heuristic_values.get(nid)
+        vis_nodes.append(
+            GraphNodeVis(
+                id=nid,
+                label=node.display_label,
+                type=node.node_type,
+                indicator_type=node.indicator_type,
+                preview=node.email_preview,
+                is_path=nid in path_node_ids,
+                is_explored=nid in explored_node_ids,
+                heuristic=h_val,
+            )
+        )
+
+    vis_edges: List[GraphEdgeVis] = []
+    seen_edges: set[tuple[str, str]] = set()
+    for source_id, neighbors in graph.adj.items():
+        for target_id in neighbors:
+            edge_key = (min(source_id, target_id), max(source_id, target_id))
+            if edge_key not in seen_edges:
+                seen_edges.add(edge_key)
+                vis_edges.append(
+                    GraphEdgeVis(
+                        source=source_id,
+                        target=target_id,
+                        is_path=edge_key in path_edge_set,
+                    )
+                )
+
+    return SearchResponse(
+        found=res.found,
+        start_email_id=res.start_email_id,
+        goal_email_id=res.goal_email_id,
+        path=path_models,
+        explored=explored_models,
+        heuristic_values=res.heuristic_values,
+        graph_summary=res.graph_summary,
+        search_metrics=res.search_metrics,
+        message=res.message,
+        graph_visualization=GraphVisData(nodes=vis_nodes, edges=vis_edges),
+    )
 
 
 if __name__ == "__main__":

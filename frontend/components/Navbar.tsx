@@ -29,6 +29,7 @@ export default function Navbar() {
     { label: "Pipeline", href: "#pipeline" },
     { label: "Scanner", href: "#scanner" },
     { label: "Batch CSV", href: "#batch" },
+    { label: "Investigation", href: "#investigation" },
     { label: "Analytics", href: "#analytics" },
     { label: "Methodology", href: "#methodology" },
   ];
